@@ -1,5 +1,5 @@
 CC = g++
-CFLAGS = -Ilib/irrlicht/include/ -Ilib/bullet/src/ -Ilib/bullet/Extras/ -Ilib/irrklang/include/ -Isrc/systems/ -Isrc/core/ -Isrc/components/ -Isrc/utilities/ -Isrc/gui/hud/ -Isrc/systems/ai_systems/ -Isrc/gui/
+CFLAGS = -Ilib/irrlicht/include/ -Ilib/bullet/src/ -Ilib/bullet/Extras/ -Ilib/irrklang/include/ -Isrc/systems/ -Isrc/core/ -Isrc/components/ -Isrc/utilities/ -Isrc/gui/hud/ -Isrc/systems/ai_systems/ -Isrc/gui/ -Isrc/fx/
 
 BSPREF = lib/bullet/src
 BEPREF = lib/bullet/Extras
