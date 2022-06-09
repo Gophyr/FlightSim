@@ -2,7 +2,6 @@
 #include "GameStateController.h"
 #include "GameController.h"
 #include "LoadoutData.h"
-#include "SceneManager.h"
 #include "ShipUtils.h"
 
 Scenario randomScenario(bool scramble)
@@ -68,7 +67,7 @@ void buildScenario(Scenario& scenario)
 		SColor(200, 255, 180, 180), 50000.f);
 	n->setID(ID_IsNotSelectable);
 
-	EntityId player = createPlayerShipFromInstance(scenario.playerStartPos, vector3df(0, 0, 0));
+	flecs::entity player = createPlayerShipFromInstance(scenario.playerStartPos, vector3df(0, 0, 0));
 	cullStartPosObstacleLocations(scenario);
 
 	setScenarioType(scenario);
@@ -121,7 +120,26 @@ void setScenarioType(Scenario& scenario)
 void setObstaclePositions(Scenario& scenario)
 {
 	std::cout << "Setting obstacle positions... ";
-	for (u32 i = 0; i < 1000; ++i) {
+
+	u32 numClusters = std::rand() % 100;
+	std::vector<vector3df> clusterPositions;
+	for (u32 i = 0; i < numClusters; ++i) {
+		clusterPositions.push_back(getPointInSphere(vector3df(0, 0, 0), 5000.f));
+	}
+
+	u32 numClusterObstacles = 800;
+	u32 numLooseObstacles = 200;
+	u32 numObstacles = numClusterObstacles + numLooseObstacles;
+	u32 obstaclesPerCluster = numClusterObstacles / numClusters;
+
+	for (u32 i = 0; i < numClusters; ++i) {
+		for (u32 j = 0; j < obstaclesPerCluster; ++j) {
+			vector3df pos = getPointInSphere(clusterPositions[i], 600.f);
+			scenario.obstaclePositions.push_back(pos);
+		}
+	}
+
+	for (u32 i = 0; i < numLooseObstacles; ++i) {
 		vector3df pos = getPointInSphere(vector3df(0, 0, 0), 5000.f);
 		scenario.obstaclePositions.push_back(pos);
 	}
@@ -134,7 +152,7 @@ void buildAsteroidField(Scenario& scenario)
 	for (u32 i = 0; i < scenario.obstaclePositions.size(); ++i) {
 		u32 scale = std::rand() % 100;
 		f32 mass = (f32)scale / 5.f;
-		EntityId rock = createAsteroid(scenario.obstaclePositions[i], randomRotationVector(), vector3df(scale, scale, scale), mass);
+		flecs::entity rock = createAsteroid(scenario.obstaclePositions[i], randomRotationVector(), vector3df(scale, scale, scale), mass);
 	}
 	std::cout << "Done.\n";
 }
@@ -144,7 +162,7 @@ void buildGasField(Scenario& scenario)
 	std::cout << "Building gas field... ";
 	for (u32 i = 0; i < scenario.obstaclePositions.size(); ++i) {
 		u32 scale = std::rand() % 30;
-		EntityId gas = createGasCloud(scenario.obstaclePositions[i], vector3df(scale, scale, scale));
+		flecs::entity gas = createGasCloud(scenario.obstaclePositions[i], vector3df(scale, scale, scale));
 	}
 	std::cout << "Done. \n";
 }
@@ -155,7 +173,7 @@ void buildDebrisField(Scenario& scenario)
 	for (u32 i = 0; i < scenario.obstaclePositions.size(); ++i) {
 		u32 scale = std::rand() % 70;
 		f32 mass = (f32)scale / 5.f;
-		EntityId debris = createDebris(scenario.obstaclePositions[i], randomRotationVector(), vector3df(scale, scale, scale), mass);
+		flecs::entity debris = createDebris(scenario.obstaclePositions[i], randomRotationVector(), vector3df(scale, scale, scale), mass);
 	}
 	std::cout << "Done.\n";
 }
@@ -183,8 +201,8 @@ void setKillHostilesScenario(Scenario& scenario)
 	std::cout << "Setting up hostiles... ";
 	for (u32 i = 0; i < scenario.objectiveCount; ++i) {
 		vector3df pos = getPointInSphere(scenario.enemyStartPos, 25.f);
-		EntityId enemy = createDefaultAIShip(pos, vector3df(0, 180, 0)); //todo: create AI ship generator that pulls from loaded ships
-		auto obj = sceneManager->scene.assign<ObjectiveComponent>(enemy);
+		flecs::entity enemy = createDefaultAIShip(pos, vector3df(0, 180, 0)); //todo: create AI ship generator that pulls from loaded ships
+		auto obj = enemy.get_mut<ObjectiveComponent>();
 		obj->type = OBJ_DESTROY;
 	}
 	std::cout << "Done. \n";
@@ -195,55 +213,27 @@ void setScrambleScenario(Scenario& scenario)
 	std::cout << "Setting up a scramble...";
 	scenario.enemyStartPos.Z += 400;
 	auto carr = createAlienCarrier(1, scenario.enemyStartPos, vector3df(0, 90, 0));
-	auto obj = sceneManager->scene.assign<ObjectiveComponent>(carr);
+	auto obj = carr.get_mut<ObjectiveComponent>();
 	obj->type = OBJ_DESTROY;
 	std::cout << "Done.\n";
 }
 
-bool collectObjective(EntityId id)
-{
-	auto irr = sceneManager->scene.get<IrrlichtComponent>(id);
-	if (!irr) return true;
-	auto playerirr = sceneManager->scene.get<IrrlichtComponent>(getPlayer());
-
-	aabbox3df bb = irr->node->getBoundingBox();
-
-	if (bb.intersectsWithBox(playerirr->node->getBoundingBox())) {
-		destroyObject(id); //get rid of it, it's considered collected
-		return true;
-	}
-
-	return false;
-}
-
-bool goToObjective(EntityId id)
-{
-	auto irr = sceneManager->scene.get<IrrlichtComponent>(id);
-	if (!irr) return true;
-
-	auto playerirr = sceneManager->scene.get<IrrlichtComponent>(getPlayer());
-
-	vector3df dist = irr->node->getAbsolutePosition() - playerirr->node->getAbsolutePosition();
-	if (dist.getLength() <= 10.f) return true;
-
-	return false;
-}
-
-bool isObjectiveCompleted(EntityId id)
+bool isObjectiveCompleted(flecs::entity id)
 {
 	//if there's no component / no entity available, either this function is unnecessary or the thing has been destroyed
 	//in either case, return true and exit the premises as quickly as possible
-	if (!sceneManager->scene.entityInUse(id)) return true;
-	auto obj = sceneManager->scene.get<ObjectiveComponent>(id);
-	if (!obj) return true;
+	if (!id.is_alive()) return true;
+	if (!id.has<ObjectiveComponent>()) return true; //if it doesn't have an objective component WHY ARE YOU CALLING THIS?
+
+	auto obj = id.get<ObjectiveComponent>();
 
 	switch (obj->type) {
 	case OBJ_DESTROY:
 		return false; //if the entity is valid, clearly it hasn't been wrecked yet
 	case OBJ_COLLECT:
-		return collectObjective(id);
+		return true;
 	case OBJ_GO_TO:
-		return goToObjective(id);
+		return true;
 	default:
 		return false;
 	}

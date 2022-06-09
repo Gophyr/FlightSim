@@ -1,5 +1,4 @@
 #include "HUDVelocityBar.h"
-#include "SceneManager.h"
 #include "GameController.h"
 #include "GameStateController.h"
 
@@ -41,12 +40,12 @@ HUDVelocityBar::~HUDVelocityBar()
 	overrideStatus->remove();
 }
 
-void HUDVelocityBar::updateElement(EntityId playerId)
+void HUDVelocityBar::updateElement(flecs::entity playerId)
 {
-	auto irr = sceneManager->scene.get<IrrlichtComponent>(playerId);
-	auto ship = sceneManager->scene.get<ShipComponent>(playerId);
-	auto rbc = sceneManager->scene.get<BulletRigidBodyComponent>(playerId);
-	auto player = sceneManager->scene.get<PlayerComponent>(playerId);
+	auto irr = playerId.get<IrrlichtComponent>();
+	auto ship = playerId.get<ShipComponent>();
+	auto rbc = playerId.get<BulletRigidBodyComponent>();
+	auto player = playerId.get<PlayerComponent>();
 
 	btVector3 pos = rbc->rigidBody.getCenterOfMassPosition();
 	btScalar velLen = rbc->rigidBody.getLinearVelocity().length();

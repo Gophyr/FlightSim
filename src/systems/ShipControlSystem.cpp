@@ -1,5 +1,4 @@
 #include "ShipControlSystem.h"
-#include "SceneManager.h"
 #include "GameController.h"
 #include <iostream>
 #include <algorithm>
@@ -80,17 +79,17 @@ void throttleToShip(ShipComponent* ship, btRigidBody* body, vector3df& thrust, v
 	setVelocity(ship, localRoll, desiredRoll, SHIP_ROLL_RIGHT, SHIP_ROLL_LEFT);
 }
 
-void firePlayerWeapon(EntityId playerId, InputComponent* input, EntityId wep)
+void firePlayerWeapon(flecs::entity playerId, InputComponent* input, flecs::entity wep)
 {
-	if (!sceneManager->scene.entityInUse(wep) || !sceneManager->scene.entityInUse(playerId)) return;
+	if (!wep.is_alive() || !playerId.is_alive()) return;
 
-	auto player = sceneManager->scene.get<PlayerComponent>(playerId);
-	auto sensors = sceneManager->scene.get<SensorComponent>(playerId);
-	auto playerIrr = sceneManager->scene.get<IrrlichtComponent>(playerId);
-	auto wepInfo = sceneManager->scene.get<WeaponInfoComponent>(wep);
-	auto irrComp = sceneManager->scene.get<IrrlichtComponent>(wep);
+	auto player = playerId.get<PlayerComponent>();
+	auto sensors = playerId.get<SensorComponent>();
+	auto playerIrr = playerId.get<IrrlichtComponent>();
+	auto irrComp = wep.get<IrrlichtComponent>();
 
-	if (!wepInfo || !player || !sensors || !playerIrr || !irrComp) return;
+	if (!wep.has<WeaponInfoComponent>() || !player || !sensors || !playerIrr || !irrComp) return;
+	auto wepInfo = wep.get_mut<WeaponInfoComponent>();
 
 	wepInfo->isFiring = true;
 	wepInfo->spawnPosition = irrComp->node->getAbsolutePosition() + (getNodeForward(irrComp->node) * 1.f);
@@ -102,19 +101,21 @@ void firePlayerWeapon(EntityId playerId, InputComponent* input, EntityId wep)
 	//auto-aim for aiming at a contact
 	for (HUDElement* h : player->HUD) {
 		if (h->type == HUD_ELEM_TYPE::ACTIVE_SELECTION) {
-			if (!sceneManager->scene.entityInUse(sensors->targetContact)) continue;
+			if (!sensors->targetContact.is_alive()) continue;
 
 			HUDActiveSelection* act = (HUDActiveSelection*)h;
 			if (act->crosshair->getAbsolutePosition().isPointInside(input->mousePixPosition)) {
-				auto rbc = sceneManager->scene.get<BulletRigidBodyComponent>(playerId);
-				auto targetRBC = sceneManager->scene.get<BulletRigidBodyComponent>(sensors->targetContact);
-				auto targetGhost = sceneManager->scene.get<BulletGhostComponent>(sensors->targetContact);
-				auto targetIrr = sceneManager->scene.get<IrrlichtComponent>(sensors->targetContact);
-
+				auto rbc = playerId.get<BulletRigidBodyComponent>();
 				btVector3 forwardTarget;
-				if (targetRBC) forwardTarget = targetRBC->rigidBody.getCenterOfMassPosition() + (targetRBC->rigidBody.getLinearVelocity() * .35f);
-				else if (targetGhost && targetIrr) forwardTarget = irrVecToBt(targetIrr->node->getAbsolutePosition());
 
+				if (sensors->targetContact.has<BulletRigidBodyComponent>()) {
+					auto targetRBC = sensors->targetContact.get<BulletRigidBodyComponent>();
+					forwardTarget = targetRBC->rigidBody.getCenterOfMassPosition() + (targetRBC->rigidBody.getLinearVelocity() * .35f);
+				}
+				else if (sensors->targetContact.has<IrrlichtComponent>()) {
+					auto targetIrr = sensors->targetContact.get<IrrlichtComponent>();
+					forwardTarget = irrVecToBt(targetIrr->node->getAbsolutePosition());
+				}
 				forwardTarget += (rbc->rigidBody.getLinearVelocity() * -.35f);
 				target = btVecToIrr(forwardTarget);
 				continue;
@@ -125,7 +126,8 @@ void firePlayerWeapon(EntityId playerId, InputComponent* input, EntityId wep)
 		if (cont->contactView->getAbsolutePosition().isPointInside(input->mousePixPosition)) {
 			for (auto [id, c] : player->trackedContacts) {
 				if (c != cont) continue;
-				auto targetIrr = sceneManager->scene.get<IrrlichtComponent>(id);
+				flecs::entity ent(game_world->get_world(), id);
+				auto targetIrr = ent.get<IrrlichtComponent>();
 				target = targetIrr->node->getPosition();
 				mouseOverHUD = true;
 				break;
@@ -144,17 +146,19 @@ void firePlayerWeapon(EntityId playerId, InputComponent* input, EntityId wep)
 	wepInfo->firingDirection = dir;
 }
 
-void shipControlSystem(f32 dt)
+void shipControlSystem(flecs::iter it, 
+	InputComponent* inc, ShipComponent* shpc, PlayerComponent* plyc, BulletRigidBodyComponent* rbcs, IrrlichtComponent* irrc, SensorComponent* snsc)
 { //This whole thing needs to be abstracted out to player-defined keybinds
-	Scene& scene = sceneManager->scene;
-	for(auto entityId : SceneView<InputComponent, ShipComponent, PlayerComponent, BulletRigidBodyComponent>(scene)) {
-		InputComponent* input = scene.get<InputComponent>(entityId);
-		ShipComponent* ship = scene.get<ShipComponent>(entityId);
-		PlayerComponent* player = scene.get<PlayerComponent>(entityId);
-		BulletRigidBodyComponent* rbc = scene.get<BulletRigidBodyComponent>(entityId);
-		IrrlichtComponent* irr = scene.get<IrrlichtComponent>(entityId);
-		SensorComponent* sensors = scene.get<SensorComponent>(entityId);
+	for(auto i : it) {
+		f32 dt = it.delta_time();
+		InputComponent* input = &inc[i];
+		ShipComponent* ship = &shpc[i];
+		PlayerComponent* player = &plyc[i];
+		BulletRigidBodyComponent* rbc = &rbcs[i];
+		IrrlichtComponent* irr = &irrc[i];
+		SensorComponent* sensors = &snsc[i];
 
+		flecs::entity entityId = it.entity(i);
 		//strafing
 		ship->safetyOverride = input->safetyOverride;
 
@@ -258,17 +262,17 @@ void shipControlSystem(f32 dt)
 
 		if (input->leftMouseDown) {
 			for (unsigned int i = 0; i < ship->hardpointCount; ++i) {
-				EntityId wep = ship->weapons[i];
-				if (!scene.entityInUse(wep)) continue;
+				flecs::entity wep = ship->weapons[i];
+				if (!wep.is_alive()) continue;
 				firePlayerWeapon(entityId, input, wep);
 			}
 		}
 		else {
 			for (unsigned int i = 0; i < ship->hardpointCount; ++i) {
-				EntityId wep = ship->weapons[i];
-				if (!scene.entityInUse(wep)) continue;
+				flecs::entity wep = ship->weapons[i];
+				if (!wep.is_alive()) continue;
 
-				auto wepInfo = scene.get<WeaponInfoComponent>(wep);
+				auto wepInfo = wep.get_mut<WeaponInfoComponent>();
 				wepInfo->isFiring = false;
 			}
 		}
@@ -277,8 +281,8 @@ void shipControlSystem(f32 dt)
 			firePlayerWeapon(entityId, input, ship->physWeapon);
 		}
 		else {
-			if (sceneManager->scene.entityInUse(ship->physWeapon)) {
-				auto wepInfo = scene.get<WeaponInfoComponent>(ship->physWeapon);
+			if (ship->physWeapon.is_alive()) {
+				auto wepInfo = ship->physWeapon.get_mut<WeaponInfoComponent>();
 				if(wepInfo) wepInfo->isFiring = false;
 			}
 		}

@@ -154,6 +154,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\components\PlayerComponent.cpp" />
+    <ClCompile Include="src\core\flecs.c" />
     <ClCompile Include="src\core\GameAssets.cpp" />
     <ClCompile Include="src\core\Networking.cpp" />
     <ClCompile Include="src\fx\Shaders.cpp" />
@@ -178,7 +179,6 @@
     <ClCompile Include="src\systems\CarrierUpdateSystem.cpp" />
     <ClCompile Include="src\systems\CollisionCheckingSystem.cpp" />
     <ClCompile Include="src\core\GameController.cpp" />
-    <ClCompile Include="src\core\ECS.cpp" />
     <ClCompile Include="src\systems\DamageSystem.cpp" />
     <ClCompile Include="src\systems\ExplosionSystem.cpp" />
     <ClCompile Include="src\systems\HealthAndShieldSystems.cpp" />
@@ -187,7 +187,6 @@
     <ClCompile Include="src\systems\ObjectiveSystem.cpp" />
     <ClCompile Include="src\systems\PlayerUpdateSystem.cpp" />
     <ClCompile Include="src\systems\ProjectileSystem.cpp" />
-    <ClCompile Include="src\core\SceneManager.cpp" />
     <ClCompile Include="src\systems\SensorUpdateSystem.cpp" />
     <ClCompile Include="src\systems\ShipControlSystem.cpp" />
     <ClCompile Include="src\systems\ShipUpdateSystem.cpp" />
@@ -223,6 +222,8 @@
     <ClInclude Include="src\components\ShipParticleComponent.h" />
     <ClInclude Include="src\components\TurretComponent.h" />
     <ClInclude Include="src\core\Campaign.h" />
+    <ClInclude Include="src\core\flecs.h" />
+    <ClInclude Include="src\core\SystemsHeader.h" />
     <ClInclude Include="src\fx\Shaders.h" />
     <ClInclude Include="src\gui\GuiCampaignLoadoutMenu.h" />
     <ClInclude Include="src\gui\GuiCampaignMenu.h" />
@@ -253,7 +254,6 @@
     <ClInclude Include="src\systems\CarrierUpdateSystem.h" />
     <ClInclude Include="src\systems\CollisionCheckingSystem.h" />
     <ClInclude Include="src\core\GameController.h" />
-    <ClInclude Include="src\core\ECS.h" />
     <ClInclude Include="src\components\HealthComponent.h" />
     <ClInclude Include="src\systems\DamageSystem.h" />
     <ClInclude Include="src\systems\ExplosionSystem.h" />
@@ -265,7 +265,6 @@
     <ClInclude Include="src\systems\ObjectiveSystem.h" />
     <ClInclude Include="src\systems\PlayerUpdateSystem.h" />
     <ClInclude Include="src\systems\ProjectileSystem.h" />
-    <ClInclude Include="src\core\SceneManager.h" />
     <ClInclude Include="src\components\ShipComponent.h" />
     <ClInclude Include="src\systems\SensorUpdateSystem.h" />
     <ClInclude Include="src\systems\ShipControlSystem.h" />

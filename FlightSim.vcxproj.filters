@@ -13,9 +13,6 @@
     <ClCompile Include="src\systems\ai_systems\DefaultAIUpdateSystem.cpp">
       <Filter>Sources\Systems\AI_Systems</Filter>
     </ClCompile>
-    <ClCompile Include="src\core\ECS.cpp">
-      <Filter>Sources\Core</Filter>
-    </ClCompile>
     <ClCompile Include="src\core\GameController.cpp">
       <Filter>Sources\Core</Filter>
     </ClCompile>
@@ -54,9 +51,6 @@
     </ClCompile>
     <ClCompile Include="src\systems\ProjectileSystem.cpp">
       <Filter>Sources\Systems</Filter>
-    </ClCompile>
-    <ClCompile Include="src\core\SceneManager.cpp">
-      <Filter>Sources\Core</Filter>
     </ClCompile>
     <ClCompile Include="src\systems\ShipControlSystem.cpp">
       <Filter>Sources\Systems</Filter>
@@ -160,6 +154,9 @@
     <ClCompile Include="src\utilities\WeaponUtils.cpp">
       <Filter>Sources\Utilities</Filter>
     </ClCompile>
+    <ClCompile Include="src\core\flecs.c">
+      <Filter>Sources\Core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\systems\AIUpdateSystem.h">
@@ -176,9 +173,6 @@
     </ClInclude>
     <ClInclude Include="src\systems\ai_systems\DefaultAIUpdateSystem.h">
       <Filter>Headers\Systems\AI_Systems</Filter>
-    </ClInclude>
-    <ClInclude Include="src\core\ECS.h">
-      <Filter>Headers\Core</Filter>
     </ClInclude>
     <ClInclude Include="src\core\GameController.h">
       <Filter>Headers\Core</Filter>
@@ -224,9 +218,6 @@
     </ClInclude>
     <ClInclude Include="src\systems\ProjectileSystem.h">
       <Filter>Headers\Systems</Filter>
-    </ClInclude>
-    <ClInclude Include="src\core\SceneManager.h">
-      <Filter>Headers\Core</Filter>
     </ClInclude>
     <ClInclude Include="src\systems\ShipControlSystem.h">
       <Filter>Headers\Systems</Filter>
@@ -407,6 +398,12 @@
     </ClInclude>
     <ClInclude Include="src\utilities\WeaponUtils.h">
       <Filter>Headers\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="src\core\flecs.h">
+      <Filter>Headers\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\core\SystemsHeader.h">
+      <Filter>Headers\Core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
