@@ -98,6 +98,8 @@ flecs::entity createAlienCarrier(u32 carrId, vector3df pos, vector3df rot)
 
 	ShipInstance* inst = newShipInstance();
 	inst->ship = stateController->shipData[1]->shipComponent;
+	inst->hards = stateController->shipData[1]->hardpointComponent;
+
 	for (u32 i = 0; i < inst->hards.hardpointCount; ++i) {
 		inst->weps[i] = stateController->weaponData[1]->weaponComponent;
 	}
@@ -131,6 +133,10 @@ flecs::entity createAlienCarrier(u32 carrId, vector3df pos, vector3df rot)
 void carrierDeathExplosionCallback(flecs::entity id)
 {
 	auto irr = id.get<IrrlichtComponent>();
+	auto carr = id.get<CarrierComponent>();
+	for (u32 i = 0; i < carr->turretCount; ++i) {
+		carr->turrets[i].get_mut<HealthComponent>()->health = 0;
+	}
 	vector3df pos = irr->node->getAbsolutePosition();
 	vector3df scale = irr->node->getScale();
 	f32 avgscale = (scale.X + scale.Y + scale.Z);

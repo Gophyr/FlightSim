@@ -27,6 +27,7 @@ bool initBtRBC(flecs::entity id, btCollisionShape* shape, btVector3& scale, f32 
 	bWorld->addRigidBody(rbc.rigidBody);
 	id.set<BulletRigidBodyComponent>(rbc);
 
+	return true;
 }
 
 bool initializeBtConvexHull(flecs::entity entityId, btConvexHullShape shape, btVector3& scale, f32 mass)

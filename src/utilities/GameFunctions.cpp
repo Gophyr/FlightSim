@@ -246,6 +246,7 @@ ShipInstance getEndScenarioData()
 
 	auto ship = gameController->getPlayer().get<ShipComponent>();
 	auto hards = gameController->getPlayer().get<HardpointComponent>();
+	inst.hards = *hards;
 	inst.ship = *ship;
 	for (u32 i = 0; i < hards->hardpointCount; ++i) {
 		if (!hards->weapons[i].is_alive()) { //there's no weapon here
@@ -284,7 +285,7 @@ ShipInstance* newShipInstance(bool templateShip)
 	ship->ship = stateController->shipData[0]->shipComponent;
 	ship->hp.health = 100.f;
 	ship->hp.maxHealth = 100.f;
-	
+	ship->hards = stateController->shipData[0]->hardpointComponent;
 	if (templateShip) {
 		++stateController->campaign.shipCount;
 		ship->id = stateController->campaign.shipCount;
@@ -304,6 +305,7 @@ ShipInstance* defaultShipInstance()
 {
 	ShipInstance* defaultShip = newShipInstance();
 	defaultShip->ship = stateController->shipData[0]->shipComponent;
+	defaultShip->hards = stateController->shipData[0]->hardpointComponent;
 	defaultShip->weps[0] = stateController->weaponData[3]->weaponComponent;
 	defaultShip->weps[1] = stateController->weaponData[3]->weaponComponent;
 	defaultShip->physWep = stateController->physWeaponData[1]->weaponComponent;
