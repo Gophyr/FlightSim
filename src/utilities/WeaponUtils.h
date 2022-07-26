@@ -8,6 +8,9 @@
 */
 void handleProjectileImpact(flecs::entity proj, flecs::entity impacted);
 
+void plasmaImpact(flecs::entity impacted);
+void kineticImpact(flecs::entity impacted);
+
 void impulseBlasterImpact(flecs::entity proj, flecs::entity impacted);
 void missileImpact(flecs::entity proj);
 void gravityBolasImpact(flecs::entity proj, flecs::entity impacted);

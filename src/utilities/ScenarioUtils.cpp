@@ -229,7 +229,7 @@ void setScrambleScenario(Scenario& scenario)
 {
 	std::cout << "Setting up a scramble...";
 	scenario.enemyStartPos.Z += 400;
-	auto carr = createAlienCarrier(1, scenario.enemyStartPos, vector3df(0, 90, 0));
+	auto carr = createAlienCarrier(1, scenario.enemyStartPos, vector3df(0, 0, 0));
 	ObjectiveComponent obj;
 	obj.type = OBJ_DESTROY;
 	carr.set<ObjectiveComponent>(obj);

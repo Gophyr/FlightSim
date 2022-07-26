@@ -7,6 +7,12 @@ void handleProjectileImpact(flecs::entity projectile, flecs::entity impacted)
 	auto proj = projectile.get<ProjectileInfoComponent>();
 
 	switch (proj->type) {
+	case WEP_PLASMA:
+		plasmaImpact(impacted);
+		break;
+	case WEP_KINETIC:
+		kineticImpact(impacted);
+		break;
 	case WEP_MISSILE:
 		missileImpact(projectile);
 		break;
@@ -28,6 +34,15 @@ void impulseBlasterImpact(flecs::entity projId, flecs::entity impacted)
 
 	gameController->registerSoundInstance(impacted, assets->getSoundAsset("physicsBlastSound"), 1.f, 200.f);
 	explode(irr->node->getAbsolutePosition(), 1.f, 1.f, 80.f, proj->damage, 500.f);
+}
+
+void plasmaImpact(flecs::entity impacted)
+{
+	gameController->registerSoundInstance(impacted, assets->getSoundAsset("plasmaImpactSound"), .3f, 25.f);
+}
+void kineticImpact(flecs::entity impacted)
+{
+	gameController->registerSoundInstance(impacted, assets->getSoundAsset("kineticImpactSound"), .9f, 25.f);
 }
 
 void missileImpact(flecs::entity projId)

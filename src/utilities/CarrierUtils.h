@@ -13,7 +13,6 @@ void initializeCarrier(flecs::entity id, f32 spawnRate, u32 reserveShips, vector
 //Builds a carrier from the ID of the carrier.
 flecs::entity createCarrierFromId(u32 id, vector3df pos, vector3df rot);
 
-bool initializeTurretWeaponFromId(u32 id, flecs::entity turret, u32 hardpoint);
 flecs::entity createTurretFromId(u32 id, flecs::entity owner, vector3df pos, vector3df startingRot);
 
 //Sets up a default human carrier.

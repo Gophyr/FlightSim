@@ -15,7 +15,6 @@ flecs::entity createShipFromId(u32 id, vector3df position, vector3df rotation)
 	irr->node->setPosition(position);
 	irr->node->setRotation(rotation);
 
-
 	initializeShipParticles(shipEntity);
 	gameController->registerDeathCallback(shipEntity, fighterDeathExplosionCallback);
 	return shipEntity;
@@ -90,6 +89,8 @@ bool initializeWeaponFromId(u32 id, flecs::entity shipId, int hardpoint, bool ph
 	auto irr = wepEntity.get_mut<IrrlichtComponent>();
 	irr->node->setParent(shipIrr->node);
 	if (!phys) {
+		vector3df pos = hards->hardpoints[hardpoint];
+		std::cout << "hardpoint loc: " << pos.X << ", " << pos.Y << ", " << pos.Z << "\n";
 		irr->node->setPosition(hards->hardpoints[hardpoint]);
 		hards->weapons[hardpoint] = wepEntity;
 	}

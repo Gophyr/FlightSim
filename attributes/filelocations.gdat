@@ -39,6 +39,9 @@ engineSound=audio/engineloop.ogg
 laserSound=audio/laser_shoot.ogg
 
 physicsBlastSound=audio/impulsecannon.ogg
+kineticImpactSound=audio/weapon_hit_kinetic.ogg
+plasmaImpactSound=audio/weapon_hit_plasma.ogg
+
 gunSound=audio/pew.ogg
 impactSound=audio/impact_d.mp3
 carrierDeathExplosionSound=audio/carrier_death_explosion.ogg

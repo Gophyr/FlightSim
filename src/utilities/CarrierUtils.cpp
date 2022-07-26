@@ -83,30 +83,6 @@ flecs::entity createHumanCarrier(u32 carrId, vector3df pos, vector3df rot)
 	return carrier;
 }
 
-bool initializeTurretWeaponFromId(u32 id, flecs::entity turret, u32 hardpoint)
-{
-	if (id <= 0) {
-		return false;
-	}
-	if (!turret.has<HardpointComponent>() || !turret.has<IrrlichtComponent>()) return false;
-
-	auto turretIrr = turret.get<IrrlichtComponent>();
-
-	auto hards = turret.get_mut<HardpointComponent>();
-	auto wepEntity = game_world->entity().child_of(turret);
-	loadWeapon(id, wepEntity, false);
-	auto irr = wepEntity.get_mut<IrrlichtComponent>();
-	irr->node->setParent(turretIrr->node);
-	vector3df hpPos = hards->hardpoints[hardpoint];
-	std::cout << "hpPos: " << hpPos.X << ", " << hpPos.Y << ", " << hpPos.Z << std::endl;
-	irr->node->setPosition(hards->hardpoints[hardpoint]);
-	hards->weapons[hardpoint] = wepEntity;
-
-	irr->node->setScale(vector3df(.5f, .5f, .5f));
-
-	return true;
-}
-
 flecs::entity createAlienCarrier(u32 carrId, vector3df pos, vector3df rot)
 {
 	auto carrier = createCarrierFromId(carrId, pos, rot);
@@ -134,14 +110,15 @@ flecs::entity createAlienCarrier(u32 carrId, vector3df pos, vector3df rot)
 	std::cout << "turret count: " << carrcmp->turretCount << "\n";
 	for (u32 i = 0; i < carrcmp->turretCount; ++i) {
 		std::cout << "Building turret on hardpoint " << i << "\n";
-		vector3df pos = carrcmp->turretPositions[i] + irr->node->getPosition();
+		vector3df pos = (carrcmp->turretPositions[i] * irr->node->getScale()) + irr->node->getPosition();
+
 		carrcmp->turrets[i] = createTurretFromId(0, carrier, pos, carrcmp->turretRotations[i]);
 		initializeHostileFaction(carrcmp->turrets[i]);
 		initializeDefaultAI(carrcmp->turrets[i]);
 		initializeDefaultSensors(carrcmp->turrets[i]);
 		auto hards = carrcmp->turrets[i].get_mut<HardpointComponent>();
 		for (u32 j = 0; j < hards->hardpointCount; ++j) {
-			initializeTurretWeaponFromId(1, carrcmp->turrets[i], j);
+			initializeWeaponFromId(1, carrcmp->turrets[i], j);
 		}
 	}
 
