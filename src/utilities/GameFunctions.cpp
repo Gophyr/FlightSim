@@ -60,10 +60,10 @@ void destroyObject(flecs::entity id)
 {
 	if (!id.is_alive()) return;
 
-	if (id.has<ShipComponent>()) {
-		auto ship = id.get_mut<ShipComponent>();
-		for (unsigned int i = 0; i < ship->hardpointCount; ++i) {
-			destroyObject(ship->weapons[i]);
+	if (id.has<HardpointComponent>()) {
+		auto hards = id.get_mut<HardpointComponent>();
+		for (unsigned int i = 0; i < hards->hardpointCount; ++i) {
+			destroyObject(hards->weapons[i]);
 		}
 	}
 	if (id.has<IrrlichtComponent>()) {
@@ -245,14 +245,15 @@ ShipInstance getEndScenarioData()
 	inst.hp = *hp;
 
 	auto ship = gameController->getPlayer().get<ShipComponent>();
+	auto hards = gameController->getPlayer().get<HardpointComponent>();
 	inst.ship = *ship;
-	for (u32 i = 0; i < ship->hardpointCount; ++i) {
-		if (!ship->weapons[i].is_alive()) { //there's no weapon here
+	for (u32 i = 0; i < hards->hardpointCount; ++i) {
+		if (!hards->weapons[i].is_alive()) { //there's no weapon here
 			inst.weps[i] = stateController->weaponData[0]->weaponComponent; //add the no-weapon component
 			continue;
 		}
 
-		auto wep = ship->weapons[i].get_mut<WeaponInfoComponent>();
+		auto wep = hards->weapons[i].get_mut<WeaponInfoComponent>();
 		if (wep->usesAmmunition) {
 			if (wep->clip < wep->maxClip) { //if the clip is partially spent just reload the damn thing
 				wep->clip = wep->maxClip;
@@ -266,11 +267,11 @@ ShipInstance getEndScenarioData()
 		}
 		inst.weps[i] = *wep;
 	}
-	if (!ship->physWeapon.is_alive()) {
+	if (!hards->physWeapon.is_alive()) {
 		inst.physWep = stateController->physWeaponData[0]->weaponComponent;
 	}
 	else {
-		auto phys = ship->physWeapon.get<WeaponInfoComponent>();
+		auto phys = hards->physWeapon.get<WeaponInfoComponent>();
 		inst.physWep = *phys;
 	}
 	//todo: make it so that it would also grab the health / ammo of wingmen

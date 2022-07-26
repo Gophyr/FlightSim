@@ -4,7 +4,7 @@
 
 GameStateController::GameStateController(VideoConfig vconf)
 {
-	std::srand(time(NULL));
+	std::srand((u32)time(NULL));
 	gameInitialized = false;
 	videoConfig = vconf;
 }

@@ -119,7 +119,7 @@ void GuiCampaignLoadoutMenu::displayShip(ShipInstance* inst)
 	}
 	shipSelector.name->setText(wstr(name).c_str());
 
-	for (u32 i = 0; i < inst->ship.hardpointCount; ++i) {
+	for (u32 i = 0; i < inst->hards.hardpointCount; ++i) {
 		WeaponInfoComponent wep = stateController->weaponData[inst->weps[i].wepDataId]->weaponComponent;
 		std::string name = stateController->weaponData[inst->weps[i].wepDataId]->name;
 		hardpoints[i]->setText(wstr(name).c_str());
@@ -132,7 +132,7 @@ void GuiCampaignLoadoutMenu::displayShip(ShipInstance* inst)
 		}
 
 	}
-	for (u32 i = inst->ship.hardpointCount; i < MAX_HARDPOINTS; ++i) {
+	for (u32 i = inst->hards.hardpointCount; i < MAX_HARDPOINTS; ++i) {
 		hardpoints[i]->setVisible(false);
 		reloadHardpoints[i]->setVisible(false);
 	}

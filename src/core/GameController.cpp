@@ -99,6 +99,7 @@ void GameController::registerComponents()
 	game_world->component<WeaponInfoComponent>();
 	game_world->component<ProjectileInfoComponent>();
 	game_world->component<ThrustComponent>();
+	game_world->component<HardpointComponent>();
 	//not added: turret, harpoon
 }
 void GameController::registerSystems()
@@ -113,9 +114,9 @@ void GameController::registerSystems()
 *	flecs::PreStore
 *	flecs::OnStore
 */
-	auto playerctrl = game_world->system<InputComponent, ShipComponent, ThrustComponent, PlayerComponent, BulletRigidBodyComponent, IrrlichtComponent, SensorComponent>()
+	auto playerctrl = game_world->system<InputComponent, HardpointComponent, ShipComponent, ThrustComponent, PlayerComponent, BulletRigidBodyComponent, IrrlichtComponent, SensorComponent>()
 		.no_staging().kind(flecs::PreUpdate).iter(shipControlSystem);
-	auto aictrl = game_world->system<AIComponent, IrrlichtComponent, BulletRigidBodyComponent, ThrustComponent, ShipComponent, SensorComponent, HealthComponent>()
+	auto aictrl = game_world->system<AIComponent, IrrlichtComponent, BulletRigidBodyComponent, ThrustComponent, HardpointComponent, SensorComponent, HealthComponent>()
 		.no_staging().kind(flecs::PreUpdate).iter(AIUpdateSystem);
 
 	game_world->system().kind(flecs::OnUpdate).no_staging().iter(collisionCheckingSystem);

@@ -6,10 +6,6 @@
 #include "Shaders.h"
 #include <vector>
 
-//The maximum amount of weapons any ship can have.
-const u32 MAX_HARDPOINTS = 6;
-#define PHYS_HARDPOINT MAX_HARDPOINTS +1
-
 /*
 * The ship component holds a lot of information about what a ship is.
 * It holds the amount of hardpoints, a list of positions for those hardpoints, the weapon ID for those hardpoints,
@@ -24,20 +20,11 @@ const u32 MAX_HARDPOINTS = 6;
 */
 struct ShipComponent {
 	u32 shipDataId;
-	u32 hardpointCount;
-	//This and the weapons array are initialized to the maximum of 8.
-	vector3df hardpoints[MAX_HARDPOINTS];
-	flecs::entity weapons[MAX_HARDPOINTS];
 
-	vector3df physWeaponHardpoint;
-	flecs::entity physWeapon;
-
-	f32 afterburnerFuel;
-	f32 maxAfterburnerFuel;
-	f32 afterburnerFuelEfficiency;
+	f32 afterburnerFuel=0;
+	f32 maxAfterburnerFuel=0;
+	f32 afterburnerFuelEfficiency=0;
 	bool afterburnerOn;
-
-	bool safetyOverride = true;
 
 	vector3df upJetPos[2];
 	vector3df downJetPos[2];

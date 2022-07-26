@@ -3,6 +3,7 @@
 #define HUDHEALTHBAR_H
 #include "BaseHeader.h"
 #include "HUDElement.h"
+#include "HardpointComponent.h"
 #include "ShipComponent.h"
 
 /*

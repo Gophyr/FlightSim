@@ -10,7 +10,7 @@
 #include "BolasComponent.h"
 #include "AIComponent.h"
 #include "ThrustComponent.h"
-#include "TurretComponent.h"
+#include "HardpointComponent.h"
 
 /*
 * Contains all data necessary to be able to properly load a ship in the game.
@@ -24,6 +24,7 @@ struct ShipData
 	std::string description;
 	ShipComponent shipComponent;
 	ThrustComponent thrustComponent;
+	HardpointComponent hardpointComponent;
 	btConvexHullShape collisionShape;
 
 	std::string shipMesh;
@@ -44,7 +45,7 @@ struct CarrierData : public ShipData
 struct TurretData
 {
 	u32 id;
-	TurretComponent turretComponent;
+	HardpointComponent hardpointComponent;
 	ThrustComponent thrustComponent;
 
 	std::string name;

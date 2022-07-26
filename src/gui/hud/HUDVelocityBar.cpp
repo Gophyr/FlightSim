@@ -59,7 +59,7 @@ void HUDVelocityBar::updateElement(flecs::entity playerId)
 
 	std::string velnum = fprecis(velLen, 5);
 	std::string angnum = fprecis(angLen * RADTODEG, 5);
-	std::string overtoggle = (ship->safetyOverride) ? "OFF" : "ON";
+	std::string overtoggle = (thrust->safetyOverride) ? "OFF" : "ON";
 
 	std::string vel = "Velocity: " + velnum;
 	std::string postext = "Position: " + x + ", " + y + ", " + z;

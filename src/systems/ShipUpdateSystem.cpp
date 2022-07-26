@@ -54,7 +54,7 @@ bool velocitySafetyCheck(f32 linVelocity, ThrustComponent* thrust, ShipComponent
 		if (std::abs(velDir.angle(thrustDir)) * RADTODEG >= 90.f) {
 			return true;
 		}
-		return ship->safetyOverride;
+		return thrust->safetyOverride;
 	}
 	return true;
 }
@@ -65,7 +65,7 @@ bool angularSafetyCheck(f32 angVelocity, ThrustComponent* thrust, ShipComponent*
 		if (std::abs(velDir.angle(thrustDir)) * RADTODEG >= 90.f) {
 			return true;
 		}
-		return ship->safetyOverride;
+		return thrust->safetyOverride;
 	}
 	return true;
 }

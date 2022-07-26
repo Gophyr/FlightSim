@@ -363,7 +363,7 @@
     <ClInclude Include="src\components\CarrierComponent.h">
       <Filter>Headers\Components\Ship Components</Filter>
     </ClInclude>
-    <ClInclude Include="src\components\TurretComponent.h">
+    <ClInclude Include="src\components\HardpointComponent.h">
       <Filter>Headers\Components\Ship Components</Filter>
     </ClInclude>
     <ClInclude Include="src\fx\Shaders.h">

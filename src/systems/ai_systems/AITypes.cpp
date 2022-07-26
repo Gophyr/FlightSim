@@ -5,6 +5,7 @@
 #include "IrrlichtComponent.h"
 #include "ThrustComponent.h"
 #include "IrrlichtUtils.h"
+#include "HardpointComponent.h"
 #include "ShipMovementUtils.h"
 
 #include <iostream>
@@ -18,7 +19,7 @@ void setAIWeapon(flecs::entity wep, bool firing)
 
 }
 
-void fireAtTarget(BulletRigidBodyComponent* rbc, const BulletRigidBodyComponent* targRBC, ShipComponent* ship)
+void fireAtTarget(BulletRigidBodyComponent* rbc, const BulletRigidBodyComponent* targRBC, HardpointComponent* hards)
 {
 	if (!targRBC || !rbc) return;
 	btVector3 facing = targRBC->rigidBody->getCenterOfMassPosition() - rbc->rigidBody->getCenterOfMassPosition();
@@ -27,8 +28,8 @@ void fireAtTarget(BulletRigidBodyComponent* rbc, const BulletRigidBodyComponent*
 	btScalar angle = forward.angle(facing);
 	//if it's facing the ship, start shooting
 	if ((angle * RADTODEG) < 30.f) { //converted to degrees so my overworked meat brain can better comprehend it
-		for (unsigned int i = 0; i < ship->hardpointCount; ++i) {
-			flecs::entity wep = ship->weapons[i];
+		for (unsigned int i = 0; i < hards->hardpointCount; ++i) {
+			flecs::entity wep = hards->weapons[i];
 			if (!wep.is_alive()) continue;
 			if (!wep.has<WeaponInfoComponent>() || !wep.has<IrrlichtComponent>()) continue;
 			auto wepInfo = wep.get_mut<WeaponInfoComponent>();
@@ -39,8 +40,8 @@ void fireAtTarget(BulletRigidBodyComponent* rbc, const BulletRigidBodyComponent*
 		}
 	}
 	else {
-		for (unsigned int i = 0; i < ship->hardpointCount; ++i) {
-			setAIWeapon(ship->weapons[i], false);
+		for (unsigned int i = 0; i < hards->hardpointCount; ++i) {
+			setAIWeapon(hards->weapons[i], false);
 		}
 	}
 }
@@ -82,21 +83,21 @@ bool DefaultShipAI::combatDistanceToWingCheck(AIComponent* aiComp, BulletRigidBo
 	return m_distCheck(aiComp, rbc, aiComp->maxWingDistance);
 }
 
-void DefaultShipAI::idle(ThrustComponent* thrust, ShipComponent* ship, BulletRigidBodyComponent* rbc)
+void DefaultShipAI::idle(ThrustComponent* thrust, HardpointComponent* hards, BulletRigidBodyComponent* rbc)
 {
 	game_world->defer_suspend();
 	//sit down and think about what you've done
 	thrust->moves[STOP_ROTATION] = true;
 	thrust->moves[STOP_VELOCITY] = true;
 
-	for (unsigned int i = 0; i < ship->hardpointCount; ++i) {
-		setAIWeapon(ship->weapons[i], false);
+	for (unsigned int i = 0; i < hards->hardpointCount; ++i) {
+		setAIWeapon(hards->weapons[i], false);
 	}
 	game_world->defer_resume();
 }
 
 void DefaultShipAI::flee(
-	ThrustComponent* thrust, ShipComponent* ship, BulletRigidBodyComponent* rbc, IrrlichtComponent* irr,
+	ThrustComponent* thrust, HardpointComponent* hards, BulletRigidBodyComponent* rbc, IrrlichtComponent* irr,
 	flecs::entity fleeTarget)
 {
 	game_world->defer_suspend();
@@ -111,16 +112,16 @@ void DefaultShipAI::flee(
 	//turn away and hit the gas as fast as possible
 	smoothTurnToDirection(rbc->rigidBody, thrust, irrVecToBt(targetVector));
 	thrust->moves[THRUST_FORWARD] = true;
-	ship->safetyOverride = true;
+	thrust->safetyOverride = true;
 
-	for (unsigned int i = 0; i < ship->hardpointCount; ++i) {
-		setAIWeapon(ship->weapons[i], false);
+	for (unsigned int i = 0; i < hards->hardpointCount; ++i) {
+		setAIWeapon(hards->weapons[i], false);
 	}
 	game_world->defer_resume();
 }
 
 void DefaultShipAI::pursue(
-	ThrustComponent* thrust, ShipComponent* ship, BulletRigidBodyComponent* rbc, IrrlichtComponent* irr, SensorComponent* sensors,
+	ThrustComponent* thrust, HardpointComponent* hards, BulletRigidBodyComponent* rbc, IrrlichtComponent* irr, SensorComponent* sensors,
 	flecs::entity pursuitTarget, f32 dt)
 {
 	game_world->defer_suspend();
@@ -154,28 +155,28 @@ void DefaultShipAI::pursue(
 		thrust->moves[STOP_VELOCITY] = true;
 		smoothTurnToDirection(rbc->rigidBody, thrust, facing);
 	}
-	fireAtTarget(rbc, targetRBC, ship);
+	fireAtTarget(rbc, targetRBC, hards);
 	game_world->defer_resume();
 }
 
 void DefaultShipAI::pursueOnWing(
-	ThrustComponent* thrust, AIComponent* aiComp, ShipComponent* ship, BulletRigidBodyComponent* rbc, IrrlichtComponent* irr, SensorComponent* sensors,
+	ThrustComponent* thrust, AIComponent* aiComp, HardpointComponent* hards, BulletRigidBodyComponent* rbc, IrrlichtComponent* irr, SensorComponent* sensors,
 	flecs::entity pursuitTarget, f32 dt)
 {
 	if (combatDistanceToWingCheck(aiComp, rbc)) {
-		pursue(thrust, ship, rbc, irr, sensors, pursuitTarget, dt);
+		pursue(thrust, hards, rbc, irr, sensors, pursuitTarget, dt);
 		return;
 	}
 	goToPoint(rbc->rigidBody, thrust, aiComp->wingCommander.get<BulletRigidBodyComponent>()->rigidBody->getCenterOfMassPosition(), dt);
-	fireAtTarget(rbc, pursuitTarget.get<BulletRigidBodyComponent>(), ship);
+	fireAtTarget(rbc, pursuitTarget.get<BulletRigidBodyComponent>(), hards);
 }
 
 void DefaultShipAI::formOnWing(
-	ThrustComponent* thrust, AIComponent* aiComp, ShipComponent* ship, BulletRigidBodyComponent* rbc, 
+	ThrustComponent* thrust, AIComponent* aiComp, HardpointComponent* hards, BulletRigidBodyComponent* rbc,
 	f32 dt)
 {
 	if (distanceToWingCheck(aiComp, rbc)) {
-		idle(thrust, ship, rbc);
+		idle(thrust, hards, rbc);
 		return;
 	}
 	goToPoint(rbc->rigidBody, thrust, aiComp->wingCommander.get<BulletRigidBodyComponent>()->rigidBody->getCenterOfMassPosition(), dt);

@@ -9,13 +9,14 @@ flecs::entity createShipFromId(u32 id, vector3df position, vector3df rotation)
 	auto shipEntity = game_world->entity();
 	loadShip(id, shipEntity);
 	if (!shipEntity.has<ShipComponent>() || !shipEntity.has<IrrlichtComponent>()) return INVALID_ENTITY;
-	auto ship = shipEntity.get_mut<ShipComponent>();
+
 	auto irr = shipEntity.get_mut<IrrlichtComponent>();
+	auto hards = shipEntity.get_mut<HardpointComponent>();
 
 	irr->node->setPosition(position);
 	irr->node->setRotation(rotation);
 	for (u32 i = 0; i < MAX_HARDPOINTS; ++i) {
-		ship->weapons[i] = INVALID_ENTITY;
+		hards->weapons[i] = INVALID_ENTITY;
 	}
 
 	initializeShipParticles(shipEntity);
@@ -26,9 +27,9 @@ flecs::entity createShipFromId(u32 id, vector3df position, vector3df rotation)
 flecs::entity createDefaultShip(vector3df position, vector3df rotation)
 {
 	flecs::entity shipEntity = createShipFromId(1, position, rotation);
-	auto ship = shipEntity.get_mut<ShipComponent>();
+	auto hards = shipEntity.get_mut<HardpointComponent>();
 
-	for (unsigned int i = 0; i < ship->hardpointCount; ++i) {
+	for (unsigned int i = 0; i < hards->hardpointCount; ++i) {
 		initializeDefaultWeapon(shipEntity, i);
 	}
 	return shipEntity;
@@ -81,10 +82,10 @@ bool initializeWeaponFromId(u32 id, flecs::entity shipId, int hardpoint, bool ph
 	if (id <= 0) {
 		return false;
 	}
-	if (!shipId.has<ShipComponent>() || !shipId.has<IrrlichtComponent>()) return false;
+	if (!shipId.has<HardpointComponent>() || !shipId.has<IrrlichtComponent>()) return false;
 
 	auto shipIrr = shipId.get<IrrlichtComponent>();
-	auto shipComp = shipId.get_mut<ShipComponent>();
+	auto hards = shipId.get_mut<HardpointComponent>();
 
 	auto wepEntity = game_world->entity().child_of(shipId); //creates a weapon entity that is a child of the ship entity
 
@@ -92,12 +93,12 @@ bool initializeWeaponFromId(u32 id, flecs::entity shipId, int hardpoint, bool ph
 	auto irr = wepEntity.get_mut<IrrlichtComponent>();
 	irr->node->setParent(shipIrr->node);
 	if (!phys) {
-		irr->node->setPosition(shipComp->hardpoints[hardpoint]);
-		shipComp->weapons[hardpoint] = wepEntity;
+		irr->node->setPosition(hards->hardpoints[hardpoint]);
+		hards->weapons[hardpoint] = wepEntity;
 	}
 	else {
-		irr->node->setPosition(shipComp->physWeaponHardpoint);
-		shipComp->physWeapon = wepEntity;
+		irr->node->setPosition(hards->physWeaponHardpoint);
+		hards->physWeapon = wepEntity;
 	}
 	irr->node->setScale(vector3df(.5f, .5f, .5f));
 
@@ -248,11 +249,12 @@ flecs::entity createShipFromInstance(ShipInstance& inst, vector3df pos, vector3d
 	auto id = createShipFromId(inst.ship.shipDataId, pos, rot);
 	if (id == INVALID_ENTITY) return id;
 	ShipComponent* ship = id.get_mut<ShipComponent>();
+	HardpointComponent* hards = id.get_mut<HardpointComponent>();
 	*ship = inst.ship;
-	for (u32 i = 0; i < ship->hardpointCount; ++i) {
+	for (u32 i = 0; i < hards->hardpointCount; ++i) {
 		WeaponInfoComponent wepReplace = inst.weps[i];
 		initializeWeaponFromId(wepReplace.wepDataId, id, i);
-		WeaponInfoComponent* wep = ship->weapons[i].get_mut<WeaponInfoComponent>();
+		WeaponInfoComponent* wep = hards->weapons[i].get_mut<WeaponInfoComponent>();
 		if (wepReplace.type != WEP_NONE && wep) {
 			wep->ammunition = wepReplace.ammunition;
 		}

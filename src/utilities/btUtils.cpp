@@ -11,7 +11,7 @@ bool initBtRBC(flecs::entity id, btCollisionShape* shape, btVector3& scale, f32 
 	rbc.shape->setLocalScaling(scale);
 	btTransform transform = btTransform();
 	transform.setIdentity();
-	transform.setOrigin(irrVecToBt(objIrr->node->getAbsolutePosition()));
+	transform.setOrigin(irrVecToBt(objIrr->node->getPosition()));
 	btQuaternion q;
 	btVector3 rot = irrVecToBt(objIrr->node->getRotation());
 	q.setEuler(rot.y(), rot.x(), rot.z());

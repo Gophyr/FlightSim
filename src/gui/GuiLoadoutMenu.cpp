@@ -87,14 +87,14 @@ void GuiLoadoutMenu::show()
 		shipButtons.name->setText(wstr(stateController->shipData[ship.ship.shipDataId]->name).c_str());
 		shipDescription->setText(wstr(stateController->shipData[ship.ship.shipDataId]->description).c_str());
 		physWeaponButtons.name->setText(wstr(stateController->physWeaponData[ship.physWep.wepDataId]->name).c_str());
-		for (u32 i = 0; i < ship.ship.hardpointCount; ++i) {
+		for (u32 i = 0; i < ship.hards.hardpointCount; ++i) {
 			weaponButtons[i].name->setText(wstr(stateController->weaponData[ship.weps[i].wepDataId]->name).c_str());
 		}
 	} else {
 		shipButtons.name->setText(wstr(stateController->shipData[stateController->playerShip]->name).c_str());
 		shipDescription->setText(wstr(stateController->shipData[stateController->playerShip]->description).c_str());
 		physWeaponButtons.name->setText(wstr(stateController->physWeaponData[stateController->playerPhysWeapon]->name).c_str());
-		for (u32 i = 0; i < stateController->shipData[stateController->playerShip]->shipComponent.hardpointCount; ++i) {
+		for (u32 i = 0; i < stateController->shipData[stateController->playerShip]->hardpointComponent.hardpointCount; ++i) {
 			weaponButtons[i].name->setText(wstr(stateController->weaponData[stateController->playerWeapons[i]]->name).c_str());
 		}
 	}
@@ -109,13 +109,13 @@ void GuiLoadoutMenu::setShipNameAndDesc(u32 shipId)
 	shipButtons.name->setText(std::wstring(name.begin(), name.end()).c_str());
 	shipDescription->setText(std::wstring(desc.begin(), desc.end()).c_str());
 
-	for (u32 i = 0; i < stateController->shipData[shipId]->shipComponent.hardpointCount; ++i) {
+	for (u32 i = 0; i < stateController->shipData[shipId]->hardpointComponent.hardpointCount; ++i) {
 		stateController->playerWeapons[i] = WEAPONID_NONE;
 		ButtonPair p = weaponButtons[i];
 		WeaponData* data = stateController->weaponData[0];
 		weaponButtons[i].name->setText(std::wstring(data->name.begin(), data->name.end()).c_str());
 	}
-	for (u32 i = stateController->shipData[shipId]->shipComponent.hardpointCount; i < MAX_HARDPOINTS; ++i) {
+	for (u32 i = stateController->shipData[shipId]->hardpointComponent.hardpointCount; i < MAX_HARDPOINTS; ++i) {
 		stateController->playerWeapons[i] = WEAPONID_INVALID;
 		ButtonPair p = weaponButtons[i];
 		weaponButtons[i].name->setText(L"");
@@ -149,7 +149,7 @@ bool GuiLoadoutMenu::onWeaponChange(const SEvent& event, bool right)
 	if (event.GUIEvent.EventType != EGET_BUTTON_CLICKED) return true;
 	u32 num = std::stoi(event.GUIEvent.Caller->getName());
 
-	if (num >= stateController->shipData[stateController->playerShip]->shipComponent.hardpointCount && num != MAX_HARDPOINTS + 1) return true;
+	if (num >= stateController->shipData[stateController->playerShip]->hardpointComponent.hardpointCount && num != MAX_HARDPOINTS + 1) return true;
 	u32 wepId = stateController->playerPhysWeapon;
 	if (num != MAX_HARDPOINTS + 1) {
 		wepId = stateController->playerWeapons[num];
@@ -193,7 +193,7 @@ bool GuiLoadoutMenu::onWeaponHover(const SEvent& event)
 {
 	u32 num = std::stoi(event.GUIEvent.Caller->getName());
 
-	if (num >= stateController->shipData[stateController->playerShip]->shipComponent.hardpointCount && num != MAX_HARDPOINTS +1) return true;
+	if (num >= stateController->shipData[stateController->playerShip]->hardpointComponent.hardpointCount && num != MAX_HARDPOINTS +1) return true;
 
 	if (event.GUIEvent.EventType == EGET_ELEMENT_HOVERED) {
 		WeaponData* data = stateController->weaponData[stateController->playerWeapons[num]];

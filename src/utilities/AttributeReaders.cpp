@@ -49,12 +49,12 @@ u32 loadShipData(std::string path, gvReader& in, bool carrier)
 	data->thrustComponent.angularMaxVelocity = std::stof(in.values["angularMaxVelocity"]);
 	data->thrustComponent.boost = std::stof(in.values["afterburnerThrust"]);
 
-	data->shipComponent.hardpointCount = std::stoi(in.values["hardpointCount"]);
+	data->hardpointComponent.hardpointCount = std::stoi(in.values["hardpointCount"]);
 
 	std::string val;
-	for (unsigned int i = 0; i < data->shipComponent.hardpointCount; ++i) {
+	for (unsigned int i = 0; i < data->hardpointComponent.hardpointCount; ++i) {
 		val = "hardpoint" + std::to_string(i);
-		data->shipComponent.hardpoints[i] = strToVec(in.values[val]);
+		data->hardpointComponent.hardpoints[i] = strToVec(in.values[val]);
 		//data->shipComponent.weapons[i] = INVALID_ENTITY;
 	}
 	for (unsigned int i = 0; i < 2; ++i) {
@@ -78,14 +78,14 @@ u32 loadShipData(std::string path, gvReader& in, bool carrier)
 		data->shipComponent.reverseJetPos[i] = strToVec(in.values[val]);
 	}
 	data->shipComponent.engineJetPos = strToVec(in.values["engineJetPos"]);
-	data->shipComponent.physWeaponHardpoint = strToVec(in.values["physWeaponHardpoint"]);
+	data->hardpointComponent.physWeaponHardpoint = strToVec(in.values["physWeaponHardpoint"]);
 
 	data->shipComponent.afterburnerFuel = std::stof(in.values["afterburnerFuel"]);
 	data->shipComponent.maxAfterburnerFuel = data->shipComponent.afterburnerFuel;
 	data->shipComponent.afterburnerFuelEfficiency = std::stof(in.values["afterburnerFuelEfficiency"]);
 
 	data->shipComponent.afterburnerOn = false;
-	data->shipComponent.safetyOverride = false;
+	data->thrustComponent.safetyOverride = false;
 	data->shipComponent.shipDataId = id;
 
 	if (carrier) {
@@ -96,7 +96,7 @@ u32 loadShipData(std::string path, gvReader& in, bool carrier)
 		carr->carrierComponent.reserveShips = in.getUint("reserveShips");
 		carr->carrierComponent.spawnRate = in.getFloat("spawnRate");
 		carr->carrierComponent.scale = carr->scale;
-		carr->mass = in.getFloat("mass");
+		carr->mass = in.getUint("mass");
 
 		carr->carrierComponent.turretCount = in.getUint("turretCount");
 		for (u32 i = 0; i < carr->carrierComponent.turretCount; ++i) {
@@ -139,9 +139,9 @@ u32 loadTurretData(std::string path, gvReader& in)
 	data->name = name;
 	data->description = in.getString("description");
 
-	data->turretComponent.hardpointCount = in.getUint("hardpointCount");
-	for (u32 i = 0; i < data->turretComponent.hardpointCount; ++i) {
-		data->turretComponent.hardpoints[i] = in.getVec("hardpoint" + std::to_string(i));
+	data->hardpointComponent.hardpointCount = in.getUint("hardpointCount");
+	for (u32 i = 0; i < data->hardpointComponent.hardpointCount; ++i) {
+		data->hardpointComponent.hardpoints[i] = in.getVec("hardpoint" + std::to_string(i));
 	}
 	data->thrustComponent.pitch = in.getFloat("pitchThrust");
 	data->thrustComponent.yaw = in.getFloat("yawThrust");
@@ -320,6 +320,7 @@ bool loadShip(u32 id, flecs::entity entity, bool carrier)
 	}
 	entity.set<ShipComponent>(data->shipComponent);
 	entity.set<ThrustComponent>(data->thrustComponent);
+	entity.set<HardpointComponent>(data->hardpointComponent);
 	entity.set<IrrlichtComponent>(irr);
 	return true;
 }
@@ -364,7 +365,7 @@ bool loadTurret(u32 id, flecs::entity entity)
 
 	entity.set<IrrlichtComponent>(irr);
 	entity.set<ThrustComponent>(data->thrustComponent);
-	entity.set<TurretComponent>(data->turretComponent);
+	entity.set<HardpointComponent>(data->hardpointComponent);
 	return true;
 }
 
@@ -588,7 +589,7 @@ bool loadWingman(std::string path, WingmanData& data)
 	in.read(path);
 	if (in.lines.empty()) {
 		std::cout << "Could not read " << path << "!\n";
-		return -1;
+		return false;
 	}
 	in.readLinesToValues();
 	data.id = in.getInt("id");

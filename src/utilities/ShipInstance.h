@@ -5,6 +5,7 @@
 #include "ShipComponent.h"
 #include "WeaponInfoComponent.h"
 #include "HealthComponent.h"
+#include "HardpointComponent.h"
 
 struct WingmanData;
 
@@ -17,6 +18,7 @@ struct ShipInstance
 {
 	u32 id; //unique ID for this particular ship instance, assigned by the campaign
 	ShipComponent ship;
+	HardpointComponent hards;
 	HealthComponent hp;
 	WeaponInfoComponent weps[MAX_HARDPOINTS]; //since weapon info components have their ids, we should be able to pull any necessary data back out when loading
 	WeaponInfoComponent physWep;

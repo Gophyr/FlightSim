@@ -18,7 +18,7 @@ std::vector<ContactInfo> getContacts(BulletRigidBodyComponent* rbc, SensorCompon
 	btVector3 closeHostileDist(0, 0, 0);
 	btVector3 closeFriendlyDist(0, 0, 0);
 	btVector3 closeDist(0, 0, 0);
-	for (u32 i = 0; i < ghost.getNumOverlappingObjects(); ++i) {
+	for (s32 i = 0; i < ghost.getNumOverlappingObjects(); ++i) {
 		btCollisionObject* obj = ghost.getOverlappingObject(i);
 		if (obj == rbc->rigidBody) continue;
 

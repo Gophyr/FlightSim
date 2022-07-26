@@ -13,7 +13,7 @@ void ExplodeAOE(ExplosionComponent* exp)
 	ghost.setCollisionShape(&shape);
 	ghost.setWorldTransform(transform);
 	bWorld->addCollisionObject(&ghost);
-	for (u32 i = 0; i < ghost.getNumOverlappingObjects(); ++i) {
+	for (s32 i = 0; i < ghost.getNumOverlappingObjects(); ++i) {
 		btCollisionObject* obj = ghost.getOverlappingObject(i);
 
 		flecs::entity objId = getIdFromBt(obj);

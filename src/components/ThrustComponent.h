@@ -44,6 +44,8 @@ struct ThrustComponent
 	f32 linearMaxVelocity=1000.f; //Max linear velocity
 	f32 angularMaxVelocity=1000.f; //Max angular velocity
 
+	bool safetyOverride = false; //whether or not this thing is allowing itself to move faster than max
+
 	ThrustComponent() {
 		for (u32 i = 0; i < MAX_MOVEMENTS; ++i) {
 			moves[i] = false;

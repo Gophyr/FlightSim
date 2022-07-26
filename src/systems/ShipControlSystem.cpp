@@ -148,7 +148,7 @@ void firePlayerWeapon(flecs::entity playerId, InputComponent* input, flecs::enti
 }
 
 void shipControlSystem(flecs::iter it,
-	InputComponent* inc, ShipComponent* shpc, ThrustComponent* thrc, PlayerComponent* plyc, BulletRigidBodyComponent* rbcs, IrrlichtComponent* irrc, SensorComponent* snsc)
+	InputComponent* inc, HardpointComponent* hardsc, ShipComponent* shpc, ThrustComponent* thrc, PlayerComponent* plyc, BulletRigidBodyComponent* rbcs, IrrlichtComponent* irrc, SensorComponent* snsc)
 { //This whole thing needs to be abstracted out to player-defined keybinds
 	for(auto i : it) {
 		f32 dt = it.delta_time();
@@ -159,10 +159,11 @@ void shipControlSystem(flecs::iter it,
 		IrrlichtComponent* irr = &irrc[i];
 		SensorComponent* sensors = &snsc[i];
 		ThrustComponent* thrust = &thrc[i];
+		HardpointComponent* hards = &hardsc[i];
 
 		flecs::entity entityId = it.entity(i);
 		//strafing
-		ship->safetyOverride = input->safetyOverride;
+		thrust->safetyOverride = input->safetyOverride;
 
 		bool fa = gameController->gameConfig.flightAssist;
 
@@ -263,15 +264,15 @@ void shipControlSystem(flecs::iter it,
 		}
 
 		if (input->leftMouseDown) {
-			for (unsigned int i = 0; i < ship->hardpointCount; ++i) {
-				flecs::entity wep = ship->weapons[i];
+			for (unsigned int i = 0; i < hards->hardpointCount; ++i) {
+				flecs::entity wep = hards->weapons[i];
 				if (!wep.is_alive()) continue;
 				firePlayerWeapon(entityId, input, wep);
 			}
 		}
 		else {
-			for (unsigned int i = 0; i < ship->hardpointCount; ++i) {
-				flecs::entity wep = ship->weapons[i];
+			for (unsigned int i = 0; i < hards->hardpointCount; ++i) {
+				flecs::entity wep = hards->weapons[i];
 				if (!wep.is_alive()) continue;
 
 				auto wepInfo = wep.get_mut<WeaponInfoComponent>();
@@ -280,11 +281,11 @@ void shipControlSystem(flecs::iter it,
 		}
 
 		if (input->rightMouseDown) {
-			firePlayerWeapon(entityId, input, ship->physWeapon);
+			firePlayerWeapon(entityId, input, hards->physWeapon);
 		}
 		else {
-			if (ship->physWeapon.is_alive()) {
-				auto wepInfo = ship->physWeapon.get_mut<WeaponInfoComponent>();
+			if (hards->physWeapon.is_alive()) {
+				auto wepInfo = hards->physWeapon.get_mut<WeaponInfoComponent>();
 				if(wepInfo) wepInfo->isFiring = false;
 			}
 		}

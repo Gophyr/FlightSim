@@ -21,7 +21,7 @@ Scenario randomScenario(bool scramble)
 	description += "\n";
 	description += in.values[scenarioStrings.at(type)];
 	u32 objCount = std::rand() % (stateController->campaign.currentDifficulty * 3) + 1;
-	if (objCount > SCENARIO_MAX_OBJECTIVES) objCount == SCENARIO_MAX_OBJECTIVES;
+	if (objCount > SCENARIO_MAX_OBJECTIVES) objCount = SCENARIO_MAX_OBJECTIVES;
 
 	if (scramble) objCount = 1; //being the single carrier needed to be taken out
 
@@ -211,7 +211,7 @@ void cullStartPosObstacleLocations(Scenario& scenario)
 void setKillHostilesScenario(Scenario& scenario)
 {
 	std::cout << "Setting up hostiles... ";
-	flecs::entity cdr = createAceAIShip(scenario.enemyStartPos, vector3df(0, 180, 0));
+	flecs::entity cdr = createAceAIShip(scenario.enemyStartPos, vector3df(0, 0, 0));
 	ObjectiveComponent obj;
 	obj.type = OBJ_DESTROY;
 	cdr.set<ObjectiveComponent>(obj);

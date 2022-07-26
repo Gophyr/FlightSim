@@ -39,7 +39,7 @@ flecs::entity createProjectileEntity(vector3df spawnPos, vector3df direction, fl
 	auto projectileInfo = addProjectileInfo(wepInfo, spawnPos);
 	projectileEntity.set<ProjectileInfoComponent>(projectileInfo);
 	projectileEntity.add<FiredBy>(weaponId);
-	projectileEntity.add<FiredByShip>(weaponId.get_object(flecs::ChildOf));
+	projectileEntity.add<OwnedByShip>(weaponId.get_object(flecs::ChildOf));
 
 	btVector3 initialForce(0, 0, 0);
 	vector3df initialDir = direction;
@@ -78,7 +78,7 @@ flecs::entity createProjectileEntity(vector3df spawnPos, vector3df direction, fl
 			flecs::entity newId = game_world->entity();
 			newId.set<ProjectileInfoComponent>(projectileInfo);
 			newId.add<FiredBy>(weaponId);
-			newId.add<FiredByShip>(weaponId.get_object(flecs::ChildOf));
+			newId.add<OwnedByShip>(weaponId.get_object(flecs::ChildOf));
 			auto newRBC = addProjectileRBC(newId, force, initVelocity, spawnPos, initRot);
 			createKineticProjectile(newId, dir, spawnPos);
 			bWorld->addRigidBody(newRBC->rigidBody);
