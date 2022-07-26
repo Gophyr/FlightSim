@@ -11,13 +11,10 @@ flecs::entity createShipFromId(u32 id, vector3df position, vector3df rotation)
 	if (!shipEntity.has<ShipComponent>() || !shipEntity.has<IrrlichtComponent>()) return INVALID_ENTITY;
 
 	auto irr = shipEntity.get_mut<IrrlichtComponent>();
-	auto hards = shipEntity.get_mut<HardpointComponent>();
 
 	irr->node->setPosition(position);
 	irr->node->setRotation(rotation);
-	for (u32 i = 0; i < MAX_HARDPOINTS; ++i) {
-		hards->weapons[i] = INVALID_ENTITY;
-	}
+
 
 	initializeShipParticles(shipEntity);
 	gameController->registerDeathCallback(shipEntity, fighterDeathExplosionCallback);

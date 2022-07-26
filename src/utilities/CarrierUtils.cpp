@@ -33,7 +33,7 @@ flecs::entity createCarrierFromId(u32 id, vector3df pos, vector3df rot)
 flecs::entity createTurretFromId(u32 id, flecs::entity owner, vector3df pos, vector3df startingRot)
 {
 	flecs::entity turret = game_world->entity().child_of(owner);
-	turret.add<OwnedByShip>(owner);
+	turret.add<DoNotCollide>(owner);
 	loadTurret(0, turret);
 	auto irr = turret.get_mut<IrrlichtComponent>();
 	auto shipIrr = owner.get<IrrlichtComponent>();

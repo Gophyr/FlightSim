@@ -105,27 +105,12 @@ bool broadCallback::needBroadphaseCollision(btBroadphaseProxy* proxy0, btBroadph
 	if (idFiredA != INVALID_ENTITY_ID && idFiredB != INVALID_ENTITY_ID) {
 		if (idFiredA == idFiredB) return false;
 	}
-	if (entityA.has<OwnedByShip>(entityB)) return false;
-	if (entityB.has<OwnedByShip>(entityA)) return false;
+	if (entityA.has<DoNotCollide>(entityB)) return false;
+	if (entityB.has<DoNotCollide>(entityA)) return false;
 
 	if (entityA.has<ProjectileInfoComponent>() && entityB.has<ProjectileInfoComponent>()) { 
 		return false;
 	}
-	//if one is a projectile and the other isn't, needs to check whether it hit its parent - if so throw it out
-	if (entityA.has<ProjectileInfoComponent>() && !entityB.has<ProjectileInfoComponent>()) {
-		return isProjectileHittingParent(entityA, entityB);
-	}
-	if (!entityA.has<ProjectileInfoComponent>() && entityB.has<ProjectileInfoComponent>()) {
-		return isProjectileHittingParent(entityB, entityA);
-	}
-
 	//in all other scenarios return true, we need the collision
-	return true;
-}
-
-bool broadCallback::isProjectileHittingParent(flecs::entity proj, flecs::entity other) const
-{
-	if (proj.has<OwnedByShip>(other)) return false;
-	//to-do: set it up so that you can't actually shoot yourself (or maybe leave it as a toggle?)
 	return true;
 }

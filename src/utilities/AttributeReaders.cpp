@@ -318,9 +318,15 @@ bool loadShip(u32 id, flecs::entity entity, bool carrier)
 		entity.set<CarrierComponent>(cdata->carrierComponent);
 		irr.node->setScale(cdata->carrierComponent.scale);
 	}
+
+	HardpointComponent hards = data->hardpointComponent;
+	for (u32 i = 0; i < MAX_HARDPOINTS; ++i) {
+		hards.weapons[i] = INVALID_ENTITY;
+	}
+
 	entity.set<ShipComponent>(data->shipComponent);
 	entity.set<ThrustComponent>(data->thrustComponent);
-	entity.set<HardpointComponent>(data->hardpointComponent);
+	entity.set<HardpointComponent>(hards);
 	entity.set<IrrlichtComponent>(irr);
 	return true;
 }

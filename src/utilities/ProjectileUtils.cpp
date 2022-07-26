@@ -21,7 +21,7 @@ vector3df adjustAccuracy(vector3df dir, f32 accuracy)
 	return newDir;
 }
 
-flecs::entity createProjectileEntity(vector3df spawnPos, vector3df direction, flecs::entity weaponId)
+flecs::entity createProjectileEntity(vector3df spawnPos, vector3df direction, flecs::entity weaponId, bool turret)
 {
 	if (!weaponId.has<WeaponInfoComponent>() || weaponId.has_relation(flecs::ChildOf)) {
 		std::cout << "Cannot fire! ";
@@ -39,7 +39,10 @@ flecs::entity createProjectileEntity(vector3df spawnPos, vector3df direction, fl
 	auto projectileInfo = addProjectileInfo(wepInfo, spawnPos);
 	projectileEntity.set<ProjectileInfoComponent>(projectileInfo);
 	projectileEntity.add<FiredBy>(weaponId);
-	projectileEntity.add<OwnedByShip>(weaponId.get_object(flecs::ChildOf));
+	projectileEntity.add<DoNotCollide>(weaponId.get_object(flecs::ChildOf));
+	if (turret) {
+		projectileEntity.add<DoNotCollide>(weaponId.get_object(flecs::ChildOf).get_object(flecs::ChildOf));
+	}
 
 	btVector3 initialForce(0, 0, 0);
 	vector3df initialDir = direction;
@@ -78,7 +81,7 @@ flecs::entity createProjectileEntity(vector3df spawnPos, vector3df direction, fl
 			flecs::entity newId = game_world->entity();
 			newId.set<ProjectileInfoComponent>(projectileInfo);
 			newId.add<FiredBy>(weaponId);
-			newId.add<OwnedByShip>(weaponId.get_object(flecs::ChildOf));
+			newId.add<DoNotCollide>(weaponId.get_object(flecs::ChildOf));
 			auto newRBC = addProjectileRBC(newId, force, initVelocity, spawnPos, initRot);
 			createKineticProjectile(newId, dir, spawnPos);
 			bWorld->addRigidBody(newRBC->rigidBody);

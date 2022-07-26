@@ -10,11 +10,11 @@
 
 //tag for projectiles that have been fired
 struct FiredBy {};
-struct OwnedByShip {};
+struct DoNotCollide {};
 
 //Creates a projectile entity and shoots it in the indicated direction. Assigns information to the projectile (range, speed, etc)
 //based on the weapon that shot it. Returns the ID of the projectile.
-flecs::entity createProjectileEntity(vector3df spawnPos, vector3df direction, flecs::entity weaponId);
+flecs::entity createProjectileEntity(vector3df spawnPos, vector3df direction, flecs::entity weaponId, bool turret=false);
 //Removes the given projectile from the scene.
 void destroyProjectile(flecs::entity projectile);
 

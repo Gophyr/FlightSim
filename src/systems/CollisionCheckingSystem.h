@@ -26,7 +26,6 @@ struct broadCallback : public btOverlapFilterCallback
 {
 	//returns true when pairs need collision
 	virtual bool needBroadphaseCollision(btBroadphaseProxy* proxy0, btBroadphaseProxy* proxy1) const;
-	bool isProjectileHittingParent(flecs::entity proj, flecs::entity other) const;//domestic abuse should never be allowed
 };
 
 

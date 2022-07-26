@@ -8,7 +8,7 @@
 bool ammoFire(flecs::entity id, WeaponInfoComponent* wep, f32 dt)
 {
 	if (wep->clip > 0) {
-		createProjectileEntity(wep->spawnPosition, wep->firingDirection, id);
+		createProjectileEntity(wep->spawnPosition, wep->firingDirection, id, true);
 		wep->clip -= 1;
 		wep->timeReloading = 0;
 		return true;
@@ -47,7 +47,7 @@ void weaponFiringSystem(flecs::iter it, WeaponInfoComponent* wic, IrrlichtCompon
 		{
 			if (wepInfo->usesAmmunition) ammoFire(it.entity(i), wepInfo, it.delta_time());
 			else {
-				createProjectileEntity(wepInfo->spawnPosition, wepInfo->firingDirection, entityId);
+				createProjectileEntity(wepInfo->spawnPosition, wepInfo->firingDirection, entityId, true);
 			}
 			wepInfo->timeSinceLastShot = 0;
 		}
