@@ -20,6 +20,7 @@ struct CarrierComponent
 	flecs::entity turrets[CARRIER_MAX_TURRETS];
 	vector3df turretPositions[CARRIER_MAX_TURRETS];
 	vector3df turretRotations[CARRIER_MAX_TURRETS];
+	btGeneric6DofConstraint* turretConstraints[CARRIER_MAX_TURRETS];
 };
 
 #endif 

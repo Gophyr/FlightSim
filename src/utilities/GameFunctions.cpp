@@ -92,6 +92,16 @@ void destroyObject(flecs::entity id)
 		auto ai = id.get_mut<AIComponent>();
 		delete ai->aiControls;
 	}
+
+	if (id.has<CarrierComponent>()) {
+		auto carr = id.get_mut<CarrierComponent>();
+		for (u32 i = 0; i < carr->turretCount; ++i) {
+			if (carr->turretConstraints[i]) {
+				bWorld->removeConstraint(carr->turretConstraints[i]);
+				delete carr->turretConstraints[i];
+			}
+		}
+	}
 	id.destruct();
 }
 

@@ -89,8 +89,6 @@ bool initializeWeaponFromId(u32 id, flecs::entity shipId, int hardpoint, bool ph
 	auto irr = wepEntity.get_mut<IrrlichtComponent>();
 	irr->node->setParent(shipIrr->node);
 	if (!phys) {
-		vector3df pos = hards->hardpoints[hardpoint];
-		std::cout << "hardpoint loc: " << pos.X << ", " << pos.Y << ", " << pos.Z << "\n";
 		irr->node->setPosition(hards->hardpoints[hardpoint]);
 		hards->weapons[hardpoint] = wepEntity;
 	}
@@ -345,6 +343,8 @@ flecs::entity createWingmanFromInstance(u32 num, flecs::entity player, vector3df
 
 void fighterDeathExplosionCallback(flecs::entity id)
 {
+	if (!id.is_alive()) return;
+
 	auto irr = id.get<IrrlichtComponent>();
 	vector3df pos = irr->node->getAbsolutePosition();
 	vector3df scale = irr->node->getScale();

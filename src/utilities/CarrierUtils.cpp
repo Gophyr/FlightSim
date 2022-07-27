@@ -4,16 +4,6 @@
 #include "GuiController.h"
 #include "HardpointComponent.h"
 
-void initializeCarrier(flecs::entity id, f32 spawnRate, u32 reserveShips, vector3df scale)
-{
-	CarrierComponent carr;
-	carr.reserveShips = reserveShips;
-	carr.spawnRate = spawnRate;
-	carr.scale = scale;
-	carr.spawnTimer = 0;
-	id.set<CarrierComponent>(carr);
-}
-
 flecs::entity createCarrierFromId(u32 id, vector3df pos, vector3df rot)
 {
 	flecs::entity carrier = game_world->entity();
@@ -94,7 +84,6 @@ flecs::entity createAlienCarrier(u32 carrId, vector3df pos, vector3df rot)
 	initializeShipCollisionBody(carrier, carrId, true);
 	initializeHealth(carrier, carr->health);
 	carrier.set<CarrierComponent>(carr->carrierComponent);
-	//initializeCarrier(carrier, carr->carrierComponent.spawnRate, carr->carrierComponent.reserveShips, carr->carrierComponent.scale);
 
 	ShipInstance* inst = newShipInstance();
 	inst->ship = stateController->shipData[1]->shipComponent;
@@ -109,9 +98,9 @@ flecs::entity createAlienCarrier(u32 carrId, vector3df pos, vector3df rot)
 	carrcmp->spawnShipTypes[0] = *inst;
 	delete inst;
 
-	std::cout << "turret count: " << carrcmp->turretCount << "\n";
+	auto rbc = carrier.get_mut<BulletRigidBodyComponent>();
+
 	for (u32 i = 0; i < carrcmp->turretCount; ++i) {
-		std::cout << "Building turret on hardpoint " << i << "\n";
 		vector3df pos = (carrcmp->turretPositions[i] * irr->node->getScale()) + irr->node->getPosition();
 
 		carrcmp->turrets[i] = createTurretFromId(0, carrier, pos, carrcmp->turretRotations[i]);
@@ -122,6 +111,24 @@ flecs::entity createAlienCarrier(u32 carrId, vector3df pos, vector3df rot)
 		for (u32 j = 0; j < hards->hardpointCount; ++j) {
 			initializeWeaponFromId(1, carrcmp->turrets[i], j);
 		}
+		auto turrRBC = carrcmp->turrets[i].get_mut<BulletRigidBodyComponent>();
+		/*
+		btTransform trA, trB;
+		trA.setIdentity();
+		trB.setIdentity();
+		trA.setOrigin(rbc->rigidBody->getCenterOfMassPosition());
+		trB.setOrigin(turrRBC->rigidBody->getCenterOfMassPosition());
+		auto constraint = new btGeneric6DofConstraint(*rbc->rigidBody, *turrRBC->rigidBody, trA, trB, false);
+		carrcmp->turretConstraints[i] = constraint;
+		constraint->setLinearLowerLimit(btVector3(0, 0, 0));
+		constraint->setLinearUpperLimit(btVector3(0, 0, 0));
+		constraint->setAngularLowerLimit(btVector3(-PI, -PI, -PI));
+		constraint->setAngularUpperLimit(btVector3(PI, PI, PI));
+		for (u32 j = 0; j < 6; ++j) {
+			constraint->setParam(BT_CONSTRAINT_STOP_ERP, 1, j);
+		}
+		bWorld->addConstraint(constraint, true);
+		*/
 	}
 
 	initializeHostileFaction(carrier);
