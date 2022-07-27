@@ -112,12 +112,12 @@ flecs::entity createAlienCarrier(u32 carrId, vector3df pos, vector3df rot)
 			initializeWeaponFromId(1, carrcmp->turrets[i], j);
 		}
 		auto turrRBC = carrcmp->turrets[i].get_mut<BulletRigidBodyComponent>();
-		/*
+		
 		btTransform trA, trB;
 		trA.setIdentity();
 		trB.setIdentity();
-		trA.setOrigin(rbc->rigidBody->getCenterOfMassPosition());
-		trB.setOrigin(turrRBC->rigidBody->getCenterOfMassPosition());
+		trA.setOrigin(irrVecToBt(carrcmp->turretPositions[i] * irr->node->getScale()));
+		trB.setOrigin(btVector3(0,0,0));
 		auto constraint = new btGeneric6DofConstraint(*rbc->rigidBody, *turrRBC->rigidBody, trA, trB, false);
 		carrcmp->turretConstraints[i] = constraint;
 		constraint->setLinearLowerLimit(btVector3(0, 0, 0));
@@ -128,7 +128,7 @@ flecs::entity createAlienCarrier(u32 carrId, vector3df pos, vector3df rot)
 			constraint->setParam(BT_CONSTRAINT_STOP_ERP, 1, j);
 		}
 		bWorld->addConstraint(constraint, true);
-		*/
+		
 	}
 
 	initializeHostileFaction(carrier);
