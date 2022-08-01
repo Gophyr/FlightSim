@@ -19,11 +19,23 @@ const u32 NUM_SCENARIO_OPTIONS = 4;
 * Presently, only about half of the data is used, but we're working on it, dammit.
 */
 
+enum SECTOR
+{
+	SECTOR_DEBRIS=0,
+	SECTOR_ASTEROID=1,
+	SECTOR_GAS=2,
+	SECTOR_SUPPLY_DEPOT=3,
+	SECTOR_GAS_GIANT=4,
+	SECTOR_FLEET_GROUP=5,
+	SECTOR_FINALE=6
+};
+
 struct Campaign
 {
-	Campaign() : currentDifficulty(1), currentEncounter(0), totalAmmunition(10), totalRepairCapacity(100) {
+	Campaign() : currentDifficulty(1), currentEncounter(0), totalAmmunition(10), totalRepairCapacity(100), currentSector(SECTOR_DEBRIS) {
 	}
 	//currently this leaks some memory and doesn't properly clean up the wingmen / ships
+	SECTOR currentSector;
 	u32 currentDifficulty;
 	u32 currentEncounter;
 	Scenario possibleScenarios[NUM_SCENARIO_OPTIONS];

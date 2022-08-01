@@ -251,6 +251,7 @@ bool GuiCampaignMenu::onAdvance(const SEvent& event)
 bool GuiCampaignMenu::advanceConfirm(const SEvent& event)
 {
 	if (event.GUIEvent.EventType != EGET_BUTTON_CLICKED) return true;
+	++stateController->campaign.currentEncounter;
 	if (stateController->campaign.currentScenario.detected()) {
 
 		Scenario scramble = scrambleScenario();
@@ -264,9 +265,11 @@ bool GuiCampaignMenu::advanceConfirm(const SEvent& event)
 		soundEngine->play2D("audio/shieldhit_major.ogg");
 		return false; 
 	}
-
+	if (stateController->campaign.currentEncounter <= 7) {
+		stateController->campaign.currentSector = (SECTOR)(stateController->campaign.currentSector + 1);
+		stateController->campaign.currentEncounter = 0;
+	}
 	stateController->campaign.moved = true;
-	++stateController->campaign.currentEncounter;
 	for (u32 i = 0; i < NUM_SCENARIO_OPTIONS; ++i) {
 		hud.scenarioSelects[i]->setVisible(true);
 	}
