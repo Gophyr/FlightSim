@@ -157,6 +157,12 @@
     <ClCompile Include="src\systems\ThrustSystem.cpp">
       <Filter>Sources\Systems</Filter>
     </ClCompile>
+    <ClCompile Include="src\core\Campaign.cpp">
+      <Filter>Sources\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\core\Sector.cpp">
+      <Filter>Sources\Core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\systems\AIUpdateSystem.h">
@@ -407,6 +413,9 @@
     </ClInclude>
     <ClInclude Include="src\systems\ThrustSystem.h">
       <Filter>Headers\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="src\core\Sector.h">
+      <Filter>Headers\Core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

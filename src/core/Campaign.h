@@ -6,10 +6,9 @@
 #include "AIComponent.h"
 #include "WeaponInfoComponent.h"
 #include "LoadoutData.h"
+#include "Sector.h"
 #include <unordered_map>
 #include <list>
-
-const u32 NUM_SCENARIO_OPTIONS = 4;
 
 /*
 * The campaign holds all the data necessary to run the current campaign. The current difficulty acts as a multiplier on how many hostiles there are,
@@ -19,41 +18,50 @@ const u32 NUM_SCENARIO_OPTIONS = 4;
 * Presently, only about half of the data is used, but we're working on it, dammit.
 */
 
-enum SECTOR
+class Campaign
 {
-	SECTOR_DEBRIS=0,
-	SECTOR_ASTEROID=1,
-	SECTOR_GAS=2,
-	SECTOR_SUPPLY_DEPOT=3,
-	SECTOR_GAS_GIANT=4,
-	SECTOR_FLEET_GROUP=5,
-	SECTOR_FINALE=6
-};
+	public:
+		Campaign() : currentDifficulty(1), ammunition(10), supplies(100.f) {
+		}
+		bool saveCampaign(std::string fname);
+		bool loadCampaign(std::string fname);
+		void newCampaign();
+		Sector* getSector() {return currentSector;}
 
-struct Campaign
-{
-	Campaign() : currentDifficulty(1), currentEncounter(0), totalAmmunition(10), totalRepairCapacity(100), currentSector(SECTOR_DEBRIS) {
-	}
-	//currently this leaks some memory and doesn't properly clean up the wingmen / ships
-	SECTOR currentSector;
-	u32 currentDifficulty;
-	u32 currentEncounter;
-	Scenario possibleScenarios[NUM_SCENARIO_OPTIONS];
-	Scenario currentScenario;
-	u32 totalAmmunition;
-	f32 totalRepairCapacity;
+		//currently this leaks some memory and doesn't properly clean up the wingmen / ships
 
-	bool moved = false;
+		void addAmmo(u32 amt);
+		u32 removeAmmo(u32 amt);
+		void addSupplies(f32 amt);
+		f32 removeSupplies(f32 amt);
 
-	WingmanData* player;
-	std::vector<WingmanData*> wingmen;
-	WingmanData* assignedWingmen[3];
-	ShipInstance* assignedShips[3];
-	std::vector<ShipInstance*> ships;
-	std::vector<WeaponInfoComponent> availableWeapons;
-	std::vector<WeaponInfoComponent> availablePhysWeapons;
+		ShipInstance* createNewShipInstance(bool templateShip = false);
+		WeaponInstance* createNewWeaponInstance(WeaponInfoComponent wep); //agnostic on whether or not it's a physics weapon or not
+		ShipInstance* buildStarterShip();
+		bool addShipInstanceToHangar(ShipInstance* inst);
+		bool addWeapon(WeaponInstance* inst);
+		ShipInstance* getShip(u32 id);
+		WingmanData* getWingman(u32 id);
+		WeaponInstance* getWeapon(u32 id);
+		WeaponInstance* getPhysWeapon(u32 id);
 
-	u32 shipCount = 0;
+	private:
+		Sector* currentSector;
+		u32 currentDifficulty;
+		u32 ammunition;
+		f32 supplies;
+
+		WingmanData* assignedWingmen[3];
+		ShipInstance* assignedShips[3];
+		WingmanData* player;
+		std::unordered_map<u32, WingmanData*> wingmen;
+		std::unordered_map<u32, ShipInstance*> ships;
+		std::unordered_map<u32, WeaponInstance*> weapons;
+		std::unordered_map<u32, WeaponInstance*> physWeapons;
+
+		//all these start at 1 since we use 0 for template ids - that is, a template design for a carrier or something
+		u32 shipCount = 0;
+		u32 wepCount = 0;
 };
 
 #endif

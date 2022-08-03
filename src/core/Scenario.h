@@ -12,7 +12,7 @@ enum SCENARIO_TYPE
 	SCENARIO_SALVAGE,
 	SCENARIO_MAX_TYPES,
 	SCENARIO_SCRAMBLE, // this is outside because we don't want this to generate when creating random scenarios
-	SCENARIO_CARRIER_BATTLE,
+	SCENARIO_CARRIER_BATTLE, //ditto, this is a larger boss fight
 	SCENARIO_NOT_LOADED
 };
 

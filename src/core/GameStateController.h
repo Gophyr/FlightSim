@@ -50,19 +50,8 @@ class GameStateController : public IEventReceiver
 
 		VideoConfig videoConfig;
 
-		u32 playerShip;
-		u32 playerWeapons[MAX_HARDPOINTS];
-		u32 playerPhysWeapon;
-
 		void loadShipAndWeaponData();
-		std::unordered_map<u32, ShipData*> shipData;
-		std::unordered_map<u32, CarrierData*> carrierData;
-		std::unordered_map<u32, TurretData*> turretData;
-		std::unordered_map<u32, WeaponData*> weaponData;
-		std::unordered_map<u32, WeaponData*> physWeaponData;
-		std::unordered_map<u32, ObstacleData*> obstacleData;
 
-		Campaign campaign;
 		bool inCampaign;
 		void backToCampaign();
 		void changeMusic(ISoundSource* newSource);

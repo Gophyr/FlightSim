@@ -43,13 +43,15 @@ using namespace irrklang;
 #pragma comment(lib, "irrKlang.lib")
 #endif
 
+#include <unordered_map>
+
 class GameStateController;
 class GameController;
 class GuiController;
 class SceneManager;
 class BulletPhysicsWorld;
 class Assets;
-
+class Campaign;
 /*
 * These are global variables used from throughout the program to track what exactly is going on.
 */
@@ -59,6 +61,7 @@ extern GameController* gameController;
 extern GuiController* guiController;
 
 extern Assets* assets;
+extern Campaign* const campaign;
 
 extern IrrlichtDevice* device;
 extern IVideoDriver* driver;
@@ -68,7 +71,20 @@ extern ISoundEngine* soundEngine;
 extern BulletPhysicsWorld* bWorld;
 extern flecs::world* game_world;
 
+struct ShipData;
+struct CarrierData;
+struct TurretData;
+struct WeaponData;
+struct ObstacleData;
+
+extern std::unordered_map<u32, ShipData*> shipData;
+extern std::unordered_map<u32, CarrierData*> carrierData;
+extern std::unordered_map<u32, TurretData*> turretData;
+extern std::unordered_map<u32, WeaponData*> weaponData;
+extern std::unordered_map<u32, WeaponData*> physWeaponData;
+extern std::unordered_map<u32, ObstacleData*> obstacleData;
+
 const flecs::id_t INVALID_ENTITY_ID = 0;
-#define INVALID_ENTITY flecs::entity(game_world->get_world(), INVALID_ENTITY_ID)
+#define INVALID_ENTITY flecs::entity(INVALID_ENTITY_ID)
 
 #endif
