@@ -260,7 +260,7 @@ ShipInstance getEndScenarioData()
 	inst.ship = *ship;
 	for (u32 i = 0; i < hards->hardpointCount; ++i) {
 		if (!hards->weapons[i].is_alive()) { //there's no weapon here
-			inst.weps[i] = stateController->weaponData[0]->weaponComponent; //add the no-weapon component
+			inst.weps[i] = weaponData[0]->weaponComponent; //add the no-weapon component
 			continue;
 		}
 

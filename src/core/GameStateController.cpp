@@ -19,14 +19,6 @@ void GameStateController::init()
 	driver->setMinHardwareBufferVertexCount(0);
 	driver->setTextureCreationFlag(ETCF_ALWAYS_32_BIT, true);
 
-	playerShip = 0;
-	playerWeapons[0] = 3;
-	playerWeapons[1] = 3;
-	for (int i = 2; i < MAX_HARDPOINTS; ++i) {
-		playerWeapons[i] = WEAPONID_INVALID;
-	}
-	playerPhysWeapon = 1;
-
 	loadShipAndWeaponData();
 	soundEngine = createIrrKlangDevice();
 
@@ -184,12 +176,7 @@ void GameStateController::setState(GAME_STATE newState)
 
 void GameStateController::backToCampaign()
 {
-	*campaign.player->assignedShip = getEndScenarioData();
-	++campaign.currentDifficulty;
-	campaign.moved = false;
-	for (u32 i = 0; i < NUM_SCENARIO_OPTIONS; ++i) {
-		campaign.possibleScenarios[i] = randomScenario();
-	}
+	campaign->returnToCampaign();
 	returningToCampaign = true;
 	setState(GAME_MENUS);
 }
@@ -198,7 +185,7 @@ void GameStateController::changeMusic(ISoundSource* newSource)
 {
 	if (currentMusic) {
 		currentMusic->stop();
-		currentMusic->drop();
+		currentMusic->drop(); //and roll!
 	}
 	currentMusic = soundEngine->play2D(newSource, true, true, true);
 	if (currentMusic) {

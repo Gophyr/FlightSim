@@ -20,7 +20,7 @@ Scenario randomScenario(bool scramble)
 	std::string description = in.values[location];
 	description += "\n";
 	description += in.values[scenarioStrings.at(type)];
-	u32 objCount = std::rand() % (stateController->campaign.currentDifficulty * 3) + 1;
+	u32 objCount = std::rand() % (campaign * 3) + 1;
 	if (objCount > SCENARIO_MAX_OBJECTIVES) objCount = SCENARIO_MAX_OBJECTIVES;
 
 	if (scramble) objCount = 1; //being the single carrier needed to be taken out
@@ -70,7 +70,7 @@ void buildScenario(Scenario& scenario)
 	flecs::entity player = createPlayerShipFromInstance(scenario.playerStartPos, vector3df(0, 0, 0));
 	vector3df wingpos = scenario.playerStartPos;
 	for (u32 i = 0; i < 3; ++i) {
-		if (!stateController->campaign.assignedWingmen[i] || !stateController->campaign.assignedShips[i]) continue;
+		if (!campaign->getAssignedWingman(i) || !campaign->getAssignedShip(i)) continue;
 		wingpos.X += 15.f;
 		flecs::entity wingman = createWingmanFromInstance(i, player, wingpos, vector3df(0, 0, 0));
 		//auto ai = wingman.get_mut<AIComponent>();

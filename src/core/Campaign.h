@@ -18,6 +18,8 @@
 * Presently, only about half of the data is used, but we're working on it, dammit.
 */
 
+const u32 MAX_WINGMEN = 3;
+
 class Campaign
 {
 	public:
@@ -25,10 +27,11 @@ class Campaign
 		}
 		bool saveCampaign(std::string fname);
 		bool loadCampaign(std::string fname);
+		void exitCampaign();
 		void newCampaign();
-		Sector* getSector() {return currentSector;}
 
-		//currently this leaks some memory and doesn't properly clean up the wingmen / ships
+		Sector* getSector() {return currentSector;}
+		void returnToCampaign(); //returns from a given scenario
 
 		void addAmmo(u32 amt);
 		u32 removeAmmo(u32 amt);
@@ -37,29 +40,37 @@ class Campaign
 
 		ShipInstance* createNewShipInstance(bool templateShip = false);
 		WeaponInstance* createNewWeaponInstance(WeaponInfoComponent wep); //agnostic on whether or not it's a physics weapon or not
+		WeaponInstance* createRandomWeaponInstance(); //only regular weapons
 		ShipInstance* buildStarterShip();
+
 		bool addShipInstanceToHangar(ShipInstance* inst);
 		bool addWeapon(WeaponInstance* inst);
+
 		ShipInstance* getShip(u32 id);
 		WingmanData* getWingman(u32 id);
 		WeaponInstance* getWeapon(u32 id);
 		WeaponInstance* getPhysWeapon(u32 id);
 
+		WingmanData* getAssignedWingman(u32 pos);
+		ShipInstance* getAssignedShip(u32 pos);
+
+		bool assignWingmanToShip(WingmanData* wingman, ShipInstance* ship);
+
+		u32 getDifficulty() { return currentDifficulty; }
 	private:
 		Sector* currentSector;
 		u32 currentDifficulty;
 		u32 ammunition;
 		f32 supplies;
 
-		WingmanData* assignedWingmen[3];
-		ShipInstance* assignedShips[3];
+		WingmanData* assignedWingmen[MAX_WINGMEN];
+		ShipInstance* assignedShips[MAX_WINGMEN];
 		WingmanData* player;
 		std::unordered_map<u32, WingmanData*> wingmen;
 		std::unordered_map<u32, ShipInstance*> ships;
 		std::unordered_map<u32, WeaponInstance*> weapons;
 		std::unordered_map<u32, WeaponInstance*> physWeapons;
 
-		//all these start at 1 since we use 0 for template ids - that is, a template design for a carrier or something
 		u32 shipCount = 0;
 		u32 wepCount = 0;
 };

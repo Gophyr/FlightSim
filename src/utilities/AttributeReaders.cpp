@@ -106,10 +106,10 @@ u32 loadShipData(std::string path, gvReader& in, bool carrier)
 			carr->carrierComponent.turretRotations[i] = in.getVec(rot);
 		}
 
-		stateController->carrierData[id] = carr;
+		carrierData[id] = carr;
 	}
 	else {
-		stateController->shipData[id] = data;
+		shipData[id] = data;
 	}
 	std::cout << "Done.\n";
 	return id;
@@ -146,7 +146,7 @@ u32 loadTurretData(std::string path, gvReader& in)
 	data->thrustComponent.pitch = in.getFloat("pitchThrust");
 	data->thrustComponent.yaw = in.getFloat("yawThrust");
 
-	stateController->turretData[id] = data;
+	turretData[id] = data;
 	std::cout << "Done. \n";
 	return id;
 }
@@ -260,13 +260,14 @@ u32 loadWeaponData(std::string path, gvReader& in)
 	bool phys = std::stoi(in.values["phys"]);
 	data->weaponComponent.phys = phys;
 	data->weaponComponent.wepDataId = id;
-	if (id == 0) {
+	/*if (id == 0) {
 		stateController->weaponData[id] = data;
 		stateController->physWeaponData[id] = data;
-	} else if (phys) {
-		stateController->physWeaponData[id] = data;
+	} else*/
+	if (phys) {
+		physWeaponData[id] = data;
 	} else {
-		stateController->weaponData[id] = data;
+		weaponData[id] = data;
 	}
 	std::cout << "Done.\n";
 	return id;
@@ -274,8 +275,8 @@ u32 loadWeaponData(std::string path, gvReader& in)
 
 bool loadShip(u32 id, flecs::entity entity, bool carrier)
 {
-	ShipData* data = stateController->shipData[id];
-	if (carrier) data = stateController->carrierData[id];
+	ShipData* data = shipData[id];
+	if (carrier) data = carrierData[id];
 
 	if (!data) return false;
 
@@ -333,7 +334,7 @@ bool loadShip(u32 id, flecs::entity entity, bool carrier)
 
 bool loadTurret(u32 id, flecs::entity entity)
 {
-	TurretData* data = stateController->turretData[id];
+	TurretData* data = turretData[id];
 	if (!data) return false;
 
 	IrrlichtComponent irr;
@@ -379,8 +380,8 @@ bool loadWeapon(u32 id, flecs::entity weaponEntity, bool phys)
 {
 	WeaponData* data = nullptr;
 
-	if (phys) data = stateController->physWeaponData[id];
-	else data = stateController->weaponData[id];
+	if (phys) data = physWeaponData[id];
+	else data = weaponData[id];
 
 	if (!data) return false;
 
@@ -473,14 +474,14 @@ u32 loadObstacleData(std::string path, gvReader& in)
 	}
 	data->type = obstacleStrings.at(in.values["type"]);
 
-	stateController->obstacleData[id] = data;
+	obstacleData[id] = data;
 	std::cout << "Done.\n";
 	return id;
 }
 
 bool loadObstacle(u32 id, flecs::entity entity)
 {
-	ObstacleData* data = stateController->obstacleData[id];
+	ObstacleData* data = obstacleData[id];
 	if (!data) return false;
 
 	ObstacleComponent obst;

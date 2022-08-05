@@ -1,0 +1,15 @@
+model=none 
+texture=none
+particle=particlered.bmp
+sound=laser_shoot.ogg
+
+id=0
+phys=1
+name=None
+description=None
+type=none
+dmgtype=none
+firingSpeed=0
+projectileSpeed=0
+lifetime=0
+damage=0

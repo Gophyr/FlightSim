@@ -47,7 +47,7 @@ void GameController::init()
 	guienv = device->getGUIEnvironment();
 	then = device->getTimer()->getTime();
 
-	currentScenario = stateController->campaign.currentScenario;
+	currentScenario = campaign->getSector()->getCurrentScenario();
 
 	//bullet init
 	broadPhase = new bt32BitAxisSweep3(btVector3(-100000, -100000, -100000), btVector3(100000, 100000, 100000));

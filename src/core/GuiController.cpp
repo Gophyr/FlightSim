@@ -60,8 +60,6 @@ void GuiController::init()
 	menus[GUI_DEATH_MENU]->init();
 	menus[GUI_SETTINGS_MENU] = new GuiSettingsMenu;
 	menus[GUI_SETTINGS_MENU]->init();
-	menus[GUI_LOADOUT_MENU] = new GuiLoadoutMenu;
-	menus[GUI_LOADOUT_MENU]->init();
 	menus[GUI_CAMPAIGN_MENU] = new GuiCampaignMenu;
 	menus[GUI_CAMPAIGN_MENU]->init();
 	menus[GUI_CAMPAIGN_LOADOUT_MENU] = new GuiCampaignLoadoutMenu;

@@ -18,17 +18,14 @@ void GuiMainMenu::init()
 	buttonSize = dimension2du(300, 80);
 	//All buttons have the root node set as the parent. This allows a single call to root->setVisible in order to display or hide the menu.
 	startGame = guienv->addButton(rect<s32>(position2di(50, 16), buttonSize), screen, MAINMENU_START, L"Start Game", L"Are you prepared to shoot rocks?");
-	loadout = guienv->addButton(rect<s32>(position2di(50, 16*2 + 80), buttonSize), screen, MAINMENU_LOADOUT, L"Set Loadout", L"What guns do you like?");
-	settings = guienv->addButton(rect<s32>(position2di(50, 16 * 3 + 80 * 2), buttonSize), screen, MAINMENU_SETTINGS, L"Settings", L"Like we have any worthwhile settings.");
-	quitGame = guienv->addButton(rect<s32>(position2di(50, 16 * 4 + (80 * 3)), buttonSize), screen, MAINMENU_QUIT, L"Quit Game", L"You'll be back.");
+	settings = guienv->addButton(rect<s32>(position2di(50, 16 * 2 + 80), buttonSize), screen, MAINMENU_SETTINGS, L"Settings", L"Like we have any worthwhile settings.");
+	quitGame = guienv->addButton(rect<s32>(position2di(50, 16 * 3 + (80 * 2)), buttonSize), screen, MAINMENU_QUIT, L"Quit Game", L"You'll be back.");
 
 	setHoloButton(startGame);
-	setHoloButton(loadout);
 	setHoloButton(settings);
 	setHoloButton(quitGame);
 
 	guiController->setCallback(startGame, std::bind(&GuiMainMenu::onStart, this, std::placeholders::_1));
-	guiController->setCallback(loadout, std::bind(&GuiMainMenu::onLoadout, this, std::placeholders::_1));
 	guiController->setCallback(settings, std::bind(&GuiMainMenu::onSettings, this, std::placeholders::_1));
 	guiController->setCallback(quitGame, std::bind(&GuiMainMenu::onQuit, this, std::placeholders::_1));
 
@@ -90,13 +87,6 @@ bool GuiMainMenu::onStart(const SEvent& event)
 	}
 	return false;
 
-}
-
-bool GuiMainMenu::onLoadout(const SEvent& event)
-{
-	if (event.GUIEvent.EventType != EGET_BUTTON_CLICKED) return true;
-	guiController->setActiveDialog(GUI_LOADOUT_MENU);
-	return false;
 }
 
 bool GuiMainMenu::onSettings(const SEvent& event)
