@@ -34,7 +34,7 @@ void GuiCampaignMenu::init()
 		IGUIButton* button = guienv->addButton(rect<s32>(position2di(startX + (size.Width * i) + (buf * i), startY), size), root, (s32)i, L"", L"Possible scenario");
 		setHoloButton(button, true);
 		hud.scenarioSelects[i] = button;
-		guiController->setCallback(button, std::bind(&GuiCampaignMenu::onShowSectorInfo, this, std::placeholders::_1));
+		guiController->setCallback(button, std::bind(&GuiCampaignMenu::onShowScenarioInfo, this, std::placeholders::_1));
 	}
 
 	hud.toMenu = guienv->addButton(rect<s32>(position2di(0, 0), dimension2du(90, 55)), hud.HUDimg, CAMPAIGN_TO_MENU, L"Menu", L"Back out for now.");
@@ -80,7 +80,7 @@ void GuiCampaignMenu::init()
 	guiController->setCallback(hud.advance, std::bind(&GuiCampaignMenu::onAdvance, this, std::placeholders::_1));
 	guiController->setCallback(loadout.wingmanButton, std::bind(&GuiCampaignMenu::onWingman, this, std::placeholders::_1));
 	guiController->setAnimationCallback(loadout.button, std::bind(&GuiCampaignMenu::moveLoadout, this, std::placeholders::_1));
-	guiController->setAnimationCallback(scenariohud.launch, std::bind(&GuiCampaignMenu::moveSectorInfo, this, std::placeholders::_1));
+	guiController->setAnimationCallback(scenariohud.launch, std::bind(&GuiCampaignMenu::moveScenarioInfo, this, std::placeholders::_1));
 
 	guiController->setAnimationCallback(hud.advance, std::bind(&GuiCampaignMenu::moveAdvance, this, std::placeholders::_1));
 	hide();
@@ -90,6 +90,7 @@ void GuiCampaignMenu::show()
 {
 	root->setRelativePosition(rect<s32>(position2di(0, 0), driver->getScreenSize()));
 	root->setVisible(true);
+
 	for (u32 i = 0; i < NUM_SCENARIO_OPTIONS; ++i) {
 		Scenario scen = stateController->campaign.possibleScenarios[i];
 		std::wstring title = wstr(stateController->campaign.possibleScenarios[i].location);
@@ -118,8 +119,8 @@ void GuiCampaignMenu::show()
 	s32 baseAdvanceX = (s32)((275.f / 960.f) * root->getRelativePosition().getWidth());
 	s32 move = (s32)((80.f / 960.f) * root->getRelativePosition().getWidth());
 
-	hud.advance->setRelativePosition(position2di(baseAdvanceX + stateController->campaign.currentEncounter * move, hud.advance->getRelativePosition().UpperLeftCorner.Y));
-	hud.shipSprite->setRelativePosition(position2di(baseShipX + stateController->campaign.currentEncounter * move, hud.shipSprite->getRelativePosition().UpperLeftCorner.Y));
+	hud.advance->setRelativePosition(position2di(baseAdvanceX + campaign->getSector()->getCurrentEncounter() *move, hud.advance->getRelativePosition().UpperLeftCorner.Y));
+	hud.shipSprite->setRelativePosition(position2di(baseShipX + campaign->getSector()->getCurrentEncounter() * move, hud.shipSprite->getRelativePosition().UpperLeftCorner.Y));
 }
 
 bool GuiCampaignMenu::onStart(const SEvent& event)
@@ -187,7 +188,7 @@ bool GuiCampaignMenu::onLoadoutMenuSelect(const SEvent& event)
 	return false;
 }
 
-bool GuiCampaignMenu::onShowSectorInfo(const SEvent& event)
+bool GuiCampaignMenu::onShowScenarioInfo(const SEvent& event)
 {
 	if (event.GUIEvent.EventType != EGET_BUTTON_CLICKED) return true;
 	s32 id = event.GUIEvent.Caller->getID();
@@ -206,7 +207,7 @@ bool GuiCampaignMenu::onShowSectorInfo(const SEvent& event)
 	return false;
 }
 
-bool GuiCampaignMenu::moveSectorInfo(f32 dt)
+bool GuiCampaignMenu::moveScenarioInfo(f32 dt)
 {
 	f32 launchRatioOpen = 4.f / 540.f;
 	f32 launchRatioClosed = 55.f / 540.f;

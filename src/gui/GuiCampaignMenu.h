@@ -74,8 +74,8 @@ class GuiCampaignMenu : public GuiDialog
 		bool onWingman(const SEvent& event);
 		bool onLoadoutMenuSelect(const SEvent& event);
 		bool moveLoadout(f32 dt);
-		bool moveSectorInfo(f32 dt);
-		bool onShowSectorInfo(const SEvent& event);
+		bool moveScenarioInfo(f32 dt);
+		bool onShowScenarioInfo(const SEvent& event);
 
 		bool onAdvance(const SEvent& event);
 		bool advanceConfirm(const SEvent& event);

@@ -29,6 +29,8 @@ public:
 	Scenario getCurrentScenario() { return *currentScenario; }
 	Scenario getScenario(u32 pos) { return scenarioOptions[pos]; }
 	void finishScenario();
+
+	u32 getCurrentEncounter() { return currentEncounter; }
 private:
 	bool moved;
 	virtual void buildScenarios() = 0;
