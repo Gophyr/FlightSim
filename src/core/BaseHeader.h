@@ -61,7 +61,7 @@ extern GameController* gameController;
 extern GuiController* guiController;
 
 extern Assets* assets;
-extern Campaign* const campaign;
+extern Campaign* campaign;
 
 extern IrrlichtDevice* device;
 extern IVideoDriver* driver;

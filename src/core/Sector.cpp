@@ -3,9 +3,11 @@
 
 bool Sector::advance()
 {
-	++currentEncounter;
+	if (moved) return false;
+	++encounterNum;
 	buildScenarios();
-	if (currentEncounter >= 7) return true;
+	moved = true;
+	if (encounterNum >= 7) return true;
 	return false;
 }
 Scenario Sector::getScenario(u32 pos)
@@ -37,4 +39,11 @@ void Sector::finishScenario()
 		playerShip->weps[i]->wep = *wep;
 	}
 	moved = false;
+}
+
+void DebrisSector::buildScenarios()
+{
+	for (u32 i = 0; i < NUM_SCENARIO_OPTIONS; ++i) {
+
+	}
 }

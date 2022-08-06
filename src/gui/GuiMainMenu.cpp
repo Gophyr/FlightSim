@@ -81,7 +81,7 @@ bool GuiMainMenu::onStart(const SEvent& event)
 		guiController->showYesNoPopup();
 	}
 	else {
-		initNewCampaign();
+		campaign->newCampaign();
 		guiController->setActiveDialog(GUI_CAMPAIGN_MENU);
 		stateController->changeMusic(assets->getSoundAsset("campaignMusic"));
 	}

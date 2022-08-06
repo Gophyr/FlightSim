@@ -4,23 +4,24 @@
 #include "LoadoutData.h"
 #include "ShipUtils.h"
 
-Scenario randomScenario(bool scramble)
+Scenario randomScenario(SCENARIO_ENVIRONMENT env, bool scramble)
 {
 	gvReader in;
 	in.read("attributes/scenarios/scenariodesc.gdat");
 	in.readLinesToValues();
 	SCENARIO_TYPE type = static_cast<SCENARIO_TYPE>(std::rand() % SCENARIO_MAX_TYPES);
 	if (type == SCENARIO_MAX_TYPES) type = SCENARIO_KILL_HOSTILES;
+	/*
 	SCENARIO_ENVIRONMENT env = static_cast<SCENARIO_ENVIRONMENT>(std::rand() % SCENENV_MAX_ENVIRONMENTS);
 	if (env == SCENENV_MAX_ENVIRONMENTS) env = SCENENV_ASTEROID_FIELD;
-
+	*/
 	if (scramble) type = SCENARIO_SCRAMBLE;
 
 	std::string location = scenarioEnvStrings.at(env);
 	std::string description = in.values[location];
 	description += "\n";
 	description += in.values[scenarioStrings.at(type)];
-	u32 objCount = std::rand() % (campaign * 3) + 1;
+	u32 objCount = std::rand() % (campaign->getDifficulty() * 3) + 1;
 	if (objCount > SCENARIO_MAX_OBJECTIVES) objCount = SCENARIO_MAX_OBJECTIVES;
 
 	if (scramble) objCount = 1; //being the single carrier needed to be taken out
@@ -33,9 +34,9 @@ Scenario randomScenario(bool scramble)
 	std::string path = "attributes/scenarios/environments/" + location + ".gdat";
 	in.read(path);
 	in.readLinesToValues();
-	scen.detectionChance = in.getInt("detectionChance") + (1*std::rand() % stateController->campaign.currentDifficulty);
+	scen.detectionChance = in.getInt("detectionChance") + (1*std::rand() % campaign->getDifficulty());
 	if (scramble) scen.detectionChance = 0; //The man has already got you.
-	scen.ammoRecovered = in.getInt("ammoRecovered") * (1 * std::rand() % stateController->campaign.currentDifficulty);
+	scen.ammoRecovered = in.getInt("ammoRecovered") * (1 * std::rand() % campaign->getDifficulty());
 	scen.resourcesRecovered = in.getFloat("resourcesRecovered");
 	scen.maxWepsRecovered = in.getInt("maxWeaponsRecovered");
 	scen.maxShipsRecovered = in.getInt("maxShipsRecovered");
@@ -44,8 +45,8 @@ Scenario randomScenario(bool scramble)
 	path = "attributes/scenarios/objectives/" + scenarioStrings.at(type) + ".gdat";
 	in.read(path);
 	in.readLinesToValues();
-	scen.ammoRecovered += in.getUint("ammoRecovered") * (1 + std::rand() % stateController->campaign.currentDifficulty);
-	scen.resourcesRecovered += in.getFloat("resourcesRecovered") * static_cast<f32>(std::rand() % stateController->campaign.currentDifficulty);
+	scen.ammoRecovered += in.getUint("ammoRecovered") * (1 + std::rand() % campaign->getDifficulty());
+	scen.resourcesRecovered += in.getFloat("resourcesRecovered") * static_cast<f32>(std::rand() % campaign->getDifficulty());
 	scen.maxWepsRecovered += in.getInt("maxWeaponsRecovered");
 	scen.maxShipsRecovered += in.getInt("maxShipsRecovered");
 
@@ -56,9 +57,9 @@ Scenario randomScenario(bool scramble)
 	return scen;
 }
 
-Scenario scrambleScenario() //for convenience
+Scenario scrambleScenario(SCENARIO_ENVIRONMENT env) //for convenience
 {
-	return randomScenario(true);
+	return randomScenario(env, true);
 }
 
 void buildScenario(Scenario& scenario)

@@ -21,24 +21,29 @@ const u32 MAX_ENCOUNTERS = 7;
 
 class Sector
 {
-public:
-	Sector(SECTOR_TYPE stype) : type(stype), moved(false), currentEncounter(0) {
-	}
-	SECTOR_TYPE getType() { return type; }
-	virtual bool advance(); //returns true if we're at the end of the sector
-	Scenario getCurrentScenario() { return *currentScenario; }
-	Scenario getScenario(u32 pos) { return scenarioOptions[pos]; }
-	void finishScenario();
+	public:
+		Sector(SECTOR_TYPE stype) : type(stype), moved(false), encounterNum(0) {
+		}
+		SECTOR_TYPE getType() { return type; }
+		virtual bool advance(); //returns true if we're at the end of the sector
+		Scenario getCurrentScenario() { return *currentScenario; }
+		Scenario getScenario(u32 pos) { return scenarioOptions[pos]; }
+		void finishScenario();
 
-	u32 getCurrentEncounter() { return currentEncounter; }
-private:
-	bool moved;
-	virtual void buildScenarios() = 0;
-	u32 currentEncounter;
+		void selectCurrentScenario(u32 pos) { currentScenario = &scenarioOptions[pos]; }
+		void deselectCurrentScenario() { currentScenario = nullptr; }
+		u32 getEncounterNum() { return encounterNum; }
 
-	std::vector<Scenario> scenarioOptions;
-	Scenario* currentScenario;
-	SECTOR_TYPE type;
+		bool hasMoved() { return moved; }
+
+		virtual void buildScenarios() = 0;
+	private:
+		bool moved;
+		u32 encounterNum;
+
+		Scenario scenarioOptions[NUM_SCENARIO_OPTIONS];
+		Scenario* currentScenario;
+		SECTOR_TYPE type;
 };
 
 class DebrisSector : public Sector

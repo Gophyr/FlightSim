@@ -33,6 +33,8 @@ class Campaign
 		Sector* getSector() {return currentSector;}
 		void returnToCampaign(); //returns from a given scenario
 
+		u32 getAmmo() { return ammunition; }
+		f32 getSupplies() { return supplies; }
 		void addAmmo(u32 amt);
 		u32 removeAmmo(u32 amt);
 		void addSupplies(f32 amt);

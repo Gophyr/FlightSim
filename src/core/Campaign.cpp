@@ -160,6 +160,8 @@ void Campaign::exitCampaign()
 	for (auto val : physWeapons) {
 		if (val) delete val;
 	}
+	if (currentSector) delete currentSector;
+
 	wingmen.clear();
 	ships.clear();
 	weapons.clear();
@@ -176,6 +178,8 @@ void Campaign::newCampaign()
 	ammunition = 10;
 	supplies = 100.f;
 	currentSector = new DebrisSector();
+
+	currentSector->buildScenarios();
 
 	auto playerShip = buildStarterShip();
 	addShipInstanceToHangar(playerShip);

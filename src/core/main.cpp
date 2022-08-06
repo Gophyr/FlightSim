@@ -24,7 +24,7 @@ std::unordered_map<u32, ObstacleData*> obstacleData;
 
 Assets* assets = new Assets;
 
-Campaign* const campaign = new Campaign;
+Campaign* campaign = new Campaign;
 
 int main()
 {

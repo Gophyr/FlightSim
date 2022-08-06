@@ -92,17 +92,17 @@ void GuiCampaignMenu::show()
 	root->setVisible(true);
 
 	for (u32 i = 0; i < NUM_SCENARIO_OPTIONS; ++i) {
-		Scenario scen = stateController->campaign.possibleScenarios[i];
-		std::wstring title = wstr(stateController->campaign.possibleScenarios[i].location);
+		Scenario scen = campaign->getSector()->getScenario(i);
+		std::wstring title = wstr(scen.location);
 		hud.scenarioSelects[i]->setText(title.c_str());
 	}
 	std::string info = "Ship Information \n \n";
-	info += "Total Ammo: \n" + std::to_string(stateController->campaign.totalAmmunition);
-	info += "\n Repair Capacity: \n" + fprecis(stateController->campaign.totalRepairCapacity, 5);
+	info += "Total Ammo: \n" + std::to_string(campaign->getAmmo());
+	info += "\n Supplies: \n" + fprecis(campaign->getSupplies(), 5);
 	hud.info->setText(wstr(info).c_str());
 	stateController->inCampaign = true;
 
-	if (stateController->campaign.moved) {
+	if (campaign->getSector()->hasMoved()) {
 		for (u32 i = 0; i < NUM_SCENARIO_OPTIONS; ++i) {
 			hud.scenarioSelects[i]->setVisible(true);
 		}
@@ -119,8 +119,8 @@ void GuiCampaignMenu::show()
 	s32 baseAdvanceX = (s32)((275.f / 960.f) * root->getRelativePosition().getWidth());
 	s32 move = (s32)((80.f / 960.f) * root->getRelativePosition().getWidth());
 
-	hud.advance->setRelativePosition(position2di(baseAdvanceX + campaign->getSector()->getCurrentEncounter() *move, hud.advance->getRelativePosition().UpperLeftCorner.Y));
-	hud.shipSprite->setRelativePosition(position2di(baseShipX + campaign->getSector()->getCurrentEncounter() * move, hud.shipSprite->getRelativePosition().UpperLeftCorner.Y));
+	hud.advance->setRelativePosition(position2di(baseAdvanceX + campaign->getSector()->getEncounterNum() *move, hud.advance->getRelativePosition().UpperLeftCorner.Y));
+	hud.shipSprite->setRelativePosition(position2di(baseShipX + campaign->getSector()->getEncounterNum() * move, hud.shipSprite->getRelativePosition().UpperLeftCorner.Y));
 }
 
 bool GuiCampaignMenu::onStart(const SEvent& event)
@@ -195,15 +195,15 @@ bool GuiCampaignMenu::onShowScenarioInfo(const SEvent& event)
 	if (!sectorInfoShowing || scenariohud.showing == id) {
 		guiController->callAnimation(scenariohud.launch);
 	}
-	std::wstring name = wstr(stateController->campaign.possibleScenarios[id].location);
-	std::string desc = stateController->campaign.possibleScenarios[id].description;
+	Scenario scen = campaign->getSector()->getScenario(id);
+	std::wstring name = wstr(scen.location);
+	std::string desc = scen.description;
 	desc += "\n \n";
-	desc += "Detection chance: " + std::to_string(stateController->campaign.possibleScenarios[id].detectionChance) + "%";
+	desc += "Detection chance: " + std::to_string(scen.detectionChance) + "%";
 	scenariohud.name->setText(name.c_str());
 	scenariohud.desc->setText(wstr(desc).c_str());
 	scenariohud.showing = id;
-	stateController->campaign.currentScenario = stateController->campaign.possibleScenarios[id];
-
+	campaign->getSector()->selectCurrentScenario(id);
 	return false;
 }
 
@@ -252,6 +252,8 @@ bool GuiCampaignMenu::onAdvance(const SEvent& event)
 bool GuiCampaignMenu::advanceConfirm(const SEvent& event)
 {
 	if (event.GUIEvent.EventType != EGET_BUTTON_CLICKED) return true;
+	campaign->getSector()->advance();
+	/*
 	++stateController->campaign.currentEncounter;
 	if (stateController->campaign.currentScenario.detected()) {
 
@@ -266,11 +268,7 @@ bool GuiCampaignMenu::advanceConfirm(const SEvent& event)
 		soundEngine->play2D("audio/shieldhit_major.ogg");
 		return false; 
 	}
-	if (stateController->campaign.currentEncounter <= 7) {
-		stateController->campaign.currentSector = (SECTOR)(stateController->campaign.currentSector + 1);
-		stateController->campaign.currentEncounter = 0;
-	}
-	stateController->campaign.moved = true;
+	*/
 	for (u32 i = 0; i < NUM_SCENARIO_OPTIONS; ++i) {
 		hud.scenarioSelects[i]->setVisible(true);
 	}
@@ -282,7 +280,7 @@ bool GuiCampaignMenu::moveAdvance(f32 dt)
 {
 	s32 baseShipX = (s32)((275.f / 960.f) * root->getRelativePosition().getWidth());
 	s32 move = (s32)((80.f / 960.f) * root->getRelativePosition().getWidth());
-	position2di shipMove = position2di(baseShipX + stateController->campaign.currentEncounter * move, hud.shipSprite->getRelativePosition().UpperLeftCorner.Y);
+	position2di shipMove = position2di(baseShipX + campaign->getSector()->getEncounterNum() * move, hud.shipSprite->getRelativePosition().UpperLeftCorner.Y);
 	position2di shipOld = shipMove;
 	shipOld.X -= move;
 
