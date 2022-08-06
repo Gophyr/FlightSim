@@ -66,10 +66,10 @@ class Campaign
 		WingmanData* assignedWingmen[MAX_WINGMEN];
 		ShipInstance* assignedShips[MAX_WINGMEN];
 		WingmanData* player;
-		std::unordered_map<u32, WingmanData*> wingmen;
-		std::unordered_map<u32, ShipInstance*> ships;
-		std::unordered_map<u32, WeaponInstance*> weapons;
-		std::unordered_map<u32, WeaponInstance*> physWeapons;
+		std::vector<WingmanData*> wingmen;
+		std::vector<ShipInstance*> ships;
+		std::vector<WeaponInstance*> weapons;
+		std::vector<WeaponInstance*> physWeapons;
 
 		u32 shipCount = 0;
 		u32 wepCount = 0;

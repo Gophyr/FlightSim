@@ -80,57 +80,51 @@ ShipInstance* Campaign::buildStarterShip()
 
 bool Campaign::addShipInstanceToHangar(ShipInstance* inst)
 {
-	if (ships.find(inst->id) != ships.end()) {
-		return false;
-	}
-ships[inst->id] = inst;
-return true;
+	if (getShip(inst->id)) return false;
+	ships.push_back(inst);
+	return true;
 }
 
 bool Campaign::addWeapon(WeaponInstance* inst)
 {
 	if (inst->wep.phys) {
-		if (physWeapons.find(inst->id) != physWeapons.end()) {
-			return false;
-		}
-		physWeapons[inst->id] = inst;
+		if (getPhysWeapon(inst->id)) return false;
+		physWeapons.push_back(inst);
 	}
 	else {
-		if (weapons.find(inst->id) != weapons.end()) {
-			return false;
-		}
-		weapons[inst->id] = inst;
+		if (getWeapon(inst->id)) return false;
+		weapons.push_back(inst);
 	}
 	return true;
 }
 ShipInstance* Campaign::getShip(u32 id)
 {
-	if (ships.find(id) == ships.end()) {
-		return nullptr;
+	for (auto val : ships) {
+		if (val->id == id) return val;
 	}
-	return ships[id];
+	return nullptr;
 }
 WingmanData* Campaign::getWingman(u32 id)
 {
-	if (wingmen.find(id) == wingmen.end()) {
-		return nullptr;
+	for (auto val : wingmen) {
+		if (val->id == id) return val;
 	}
-	return wingmen[id];
+	return nullptr;
 }
 
 WeaponInstance* Campaign::getWeapon(u32 id)
 {
-	if (weapons.find(id) == weapons.end()) {
-		return nullptr;
+	for (auto val : weapons) {
+		if (val->id == id) return val;
 	}
-	return weapons[id];
+	return nullptr;
 }
 WeaponInstance* Campaign::getPhysWeapon(u32 id)
 {
-	if (physWeapons.find(id) == physWeapons.end()) {
-		return nullptr;
+	for (auto val : physWeapons) {
+		if (val->id == id) return val;
 	}
-	return physWeapons[id];
+	return nullptr;
 }
 WingmanData* Campaign::getAssignedWingman(u32 pos)
 {
@@ -154,16 +148,16 @@ bool Campaign::assignWingmanToShip(WingmanData* wingman, ShipInstance* ship)
 void Campaign::exitCampaign()
 {
 	std::cout << "Cleaning out old data... ";
-	for (auto [id, val] : wingmen) {
+	for (auto val : wingmen) {
 		if (val) delete val;
 	}
-	for (auto [id, val] : ships) {
+	for (auto val : ships) {
 		if (val) delete val;
 	}
-	for (auto [id, val] : weapons) {
+	for (auto val : weapons) {
 		if (val) delete val;
 	}
-	for (auto [id, val] : physWeapons) {
+	for (auto val : physWeapons) {
 		if (val) delete val;
 	}
 	wingmen.clear();
@@ -194,10 +188,10 @@ void Campaign::newCampaign()
 	for (const auto& file : std::filesystem::directory_iterator(wingmanPath)) {
 		WingmanData* data = new WingmanData;
 		if (!loadWingman(file.path().string(), *data)) continue;
-		wingmen[data->id] = data;
+		wingmen.push_back(data);
 	}
 
-	player = wingmen[0];
+	player = getWingman(0);
 	assignWingmanToShip(player, playerShip);
 
 	for (u32 i = 0; i < MAX_WINGMEN; ++i) {
