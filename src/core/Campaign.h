@@ -47,11 +47,16 @@ class Campaign
 
 		bool addShipInstanceToHangar(ShipInstance* inst);
 		bool addWeapon(WeaponInstance* inst);
+		bool removeShipInstance(ShipInstance* inst);
+		bool removeWeapon(WeaponInstance* inst);
 
-		ShipInstance* getShip(u32 id);
-		WingmanData* getWingman(u32 id);
-		WeaponInstance* getWeapon(u32 id);
-		WeaponInstance* getPhysWeapon(u32 id);
+		ShipInstance* getShip(u32 uniqueId);
+		WingmanData* getWingman(u32 uniqueId);
+		WeaponInstance* getWeapon(u32 uniqueId);
+		WeaponInstance* getPhysWeapon(u32 uniqueId);
+
+		ShipInstance* getPlayerShip() { return player->assignedShip; }
+		WingmanData* getPlayer() { return player; }
 
 		WingmanData* getAssignedWingman(u32 pos);
 		ShipInstance* getAssignedShip(u32 pos);
@@ -59,6 +64,11 @@ class Campaign
 		bool assignWingmanToShip(WingmanData* wingman, ShipInstance* ship);
 
 		u32 getDifficulty() { return currentDifficulty; }
+
+		const std::list<ShipInstance*>& const ships() { return m_ships; }
+		const std::list<WingmanData*>& const wingmen() { return m_wingmen; }
+		const std::list<WeaponInstance*>& const weapons() { return m_weapons; }
+		const std::list<WeaponInstance*>& const physWeapons() { return m_physWeapons; }
 	private:
 		Sector* currentSector;
 		u32 currentDifficulty;
@@ -68,10 +78,11 @@ class Campaign
 		WingmanData* assignedWingmen[MAX_WINGMEN];
 		ShipInstance* assignedShips[MAX_WINGMEN];
 		WingmanData* player;
-		std::vector<WingmanData*> wingmen;
-		std::vector<ShipInstance*> ships;
-		std::vector<WeaponInstance*> weapons;
-		std::vector<WeaponInstance*> physWeapons;
+
+		std::list<WingmanData*> m_wingmen;
+		std::list<ShipInstance*> m_ships;
+		std::list<WeaponInstance*> m_weapons;
+		std::list<WeaponInstance*> m_physWeapons;
 
 		u32 shipCount = 0;
 		u32 wepCount = 0;

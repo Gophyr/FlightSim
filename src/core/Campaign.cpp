@@ -81,7 +81,7 @@ ShipInstance* Campaign::buildStarterShip()
 bool Campaign::addShipInstanceToHangar(ShipInstance* inst)
 {
 	if (getShip(inst->id)) return false;
-	ships.push_back(inst);
+	m_ships.push_back(inst);
 	return true;
 }
 
@@ -89,24 +89,62 @@ bool Campaign::addWeapon(WeaponInstance* inst)
 {
 	if (inst->wep.phys) {
 		if (getPhysWeapon(inst->id)) return false;
-		physWeapons.push_back(inst);
+		m_physWeapons.push_back(inst);
 	}
 	else {
 		if (getWeapon(inst->id)) return false;
-		weapons.push_back(inst);
+		m_weapons.push_back(inst);
 	}
 	return true;
 }
+
+bool Campaign::removeShipInstance(ShipInstance* inst)
+{
+	auto it = m_ships.begin();
+	while (it != m_ships.end()) {
+		if (inst->id == (*it)->id) {
+			it = m_ships.erase(it);
+			return true;
+		}
+		++it;
+	}
+	return false;
+}
+bool Campaign::removeWeapon(WeaponInstance* inst)
+{
+	if (inst->wep.phys) {
+		auto it = m_physWeapons.begin();
+		while (it != m_physWeapons.end()) {
+			if (inst->id == (*it)->id) {
+				it = m_physWeapons.erase(it);
+				return true;
+			}
+			++it;
+		}
+	}
+	else {
+		auto it = m_weapons.begin();
+		while (it != m_weapons.end()) {
+			if (inst->id == (*it)->id) {
+				it = m_weapons.erase(it);
+				return true;
+			}
+			++it;
+		}
+	}
+	return false;
+}
+
 ShipInstance* Campaign::getShip(u32 id)
 {
-	for (auto val : ships) {
+	for (auto val : m_ships) {
 		if (val->id == id) return val;
 	}
 	return nullptr;
 }
 WingmanData* Campaign::getWingman(u32 id)
 {
-	for (auto val : wingmen) {
+	for (auto val : m_wingmen) {
 		if (val->id == id) return val;
 	}
 	return nullptr;
@@ -114,14 +152,14 @@ WingmanData* Campaign::getWingman(u32 id)
 
 WeaponInstance* Campaign::getWeapon(u32 id)
 {
-	for (auto val : weapons) {
+	for (auto val : m_weapons) {
 		if (val->id == id) return val;
 	}
 	return nullptr;
 }
 WeaponInstance* Campaign::getPhysWeapon(u32 id)
 {
-	for (auto val : physWeapons) {
+	for (auto val : m_physWeapons) {
 		if (val->id == id) return val;
 	}
 	return nullptr;
@@ -148,24 +186,24 @@ bool Campaign::assignWingmanToShip(WingmanData* wingman, ShipInstance* ship)
 void Campaign::exitCampaign()
 {
 	std::cout << "Cleaning out old data... ";
-	for (auto val : wingmen) {
+	for (auto val : m_wingmen) {
 		if (val) delete val;
 	}
-	for (auto val : ships) {
+	for (auto val : m_ships) {
 		if (val) delete val;
 	}
-	for (auto val : weapons) {
+	for (auto val : m_weapons) {
 		if (val) delete val;
 	}
-	for (auto val : physWeapons) {
+	for (auto val : m_physWeapons) {
 		if (val) delete val;
 	}
 	if (currentSector) delete currentSector;
 
-	wingmen.clear();
-	ships.clear();
-	weapons.clear();
-	physWeapons.clear();
+	m_wingmen.clear();
+	m_ships.clear();
+	m_weapons.clear();
+	m_physWeapons.clear();
 	std::cout << "Done.\n";
 }
 void Campaign::newCampaign()
@@ -192,7 +230,7 @@ void Campaign::newCampaign()
 	for (const auto& file : std::filesystem::directory_iterator(wingmanPath)) {
 		WingmanData* data = new WingmanData;
 		if (!loadWingman(file.path().string(), *data)) continue;
-		wingmen.push_back(data);
+		m_wingmen.push_back(data);
 	}
 
 	player = getWingman(0);
