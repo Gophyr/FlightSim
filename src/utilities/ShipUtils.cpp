@@ -63,10 +63,10 @@ bool initializeShipCollisionBody(flecs::entity entityId, u32 shipId, bool carrie
 
 	btVector3 scale(1.f, 1.f, 1.f);
 	btScalar mass = 1.f;
-	btConvexHullShape hull = stateController->shipData[shipId]->collisionShape;
+	btConvexHullShape hull = shipData[shipId]->collisionShape;
 	if (carrier) {
-		hull = stateController->carrierData[shipId]->collisionShape;
-		CarrierData* data = stateController->carrierData[shipId];
+		hull = carrierData[shipId]->collisionShape;
+		CarrierData* data = carrierData[shipId];
 		scale = irrVecToBt(data->carrierComponent.scale);
 		mass = data->mass;
 	}
@@ -248,7 +248,7 @@ flecs::entity createShipFromInstance(ShipInstance& inst, vector3df pos, vector3d
 	HardpointComponent* hards = id.get_mut<HardpointComponent>();
 	*ship = inst.ship;
 	for (u32 i = 0; i < hards->hardpointCount; ++i) {
-		WeaponInfoComponent wepReplace = inst.weps[i];
+		WeaponInfoComponent wepReplace = inst.weps[i]->wep;
 		initializeWeaponFromId(wepReplace.wepDataId, id, i);
 		WeaponInfoComponent* wep = hards->weapons[i].get_mut<WeaponInfoComponent>();
 		if (wepReplace.type != WEP_NONE && wep) {
@@ -260,7 +260,7 @@ flecs::entity createShipFromInstance(ShipInstance& inst, vector3df pos, vector3d
 	*hp = inst.hp;
 	initializeShipCollisionBody(id, inst.ship.shipDataId);
 
-	initializeWeaponFromId(inst.physWep.wepDataId, id, 0, true);
+	initializeWeaponFromId(inst.physWep->wep.wepDataId, id, 0, true);
 
 	return id;
 }
@@ -308,10 +308,10 @@ flecs::entity carrierSpawnShip(ShipInstance& inst, vector3df spawnPos, vector3df
 
 flecs::entity createPlayerShipFromInstance(vector3df pos, vector3df rot)
 {
-	ShipInstance inst = *stateController->campaign.player->assignedShip;
-	u32 shipId = inst.ship.shipDataId;
+	ShipInstance* inst = campaign->getPlayerShip();
+	u32 shipId = inst->ship.shipDataId;
 
-	auto id = createShipFromInstance(inst, pos, rot);
+	auto id = createShipFromInstance(*inst, pos, rot);
 	initializeDefaultPlayer(id);
 	initializePlayerFaction(id);
 	initializeDefaultShields(id);
@@ -324,8 +324,8 @@ flecs::entity createPlayerShipFromInstance(vector3df pos, vector3df rot)
 
 flecs::entity createWingmanFromInstance(u32 num, flecs::entity player, vector3df pos, vector3df rot)
 {
-	if (!stateController->campaign.assignedWingmen[num] || !stateController->campaign.assignedShips[num]) return INVALID_ENTITY;
-	auto wingData = stateController->campaign.assignedWingmen[num];
+	if (!campaign->getWingman(num) || !campaign->getAssignedShip(num)) return INVALID_ENTITY;
+	auto wingData = campaign->getWingman(num);
 	auto id = createShipFromInstance(*wingData->assignedShip, pos, rot);
 	if (id == INVALID_ENTITY) return id;
 	auto irr = id.get_mut<IrrlichtComponent>(id);

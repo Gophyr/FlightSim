@@ -33,16 +33,17 @@ class Campaign
 		Sector* getSector() {return currentSector;}
 		void returnToCampaign(); //returns from a given scenario
 
-		u32 getAmmo() { return ammunition; }
+		s32 getAmmo() { return ammunition; }
 		f32 getSupplies() { return supplies; }
-		void addAmmo(u32 amt);
-		u32 removeAmmo(u32 amt);
+		void addAmmo(s32 amt);
+		s32 removeAmmo(s32 amt);
 		void addSupplies(f32 amt);
 		f32 removeSupplies(f32 amt);
 
 		ShipInstance* createNewShipInstance(bool templateShip = false);
-		WeaponInstance* createNewWeaponInstance(WeaponInfoComponent wep); //agnostic on whether or not it's a physics weapon or not
+		WeaponInstance* createNewWeaponInstance(WeaponInfoComponent wep, bool templateWep = false); //agnostic on whether or not it's a physics weapon or not
 		WeaponInstance* createRandomWeaponInstance(); //only regular weapons
+		ShipInstance* createRandomShipInstance();
 		ShipInstance* buildStarterShip();
 
 		bool addShipInstanceToHangar(ShipInstance* inst);
@@ -59,20 +60,26 @@ class Campaign
 		WingmanData* getPlayer() { return player; }
 
 		WingmanData* getAssignedWingman(u32 pos);
+		void setAssignedWingman(WingmanData* man, u32 pos);
+		void removeAssignedWingman(u32 pos);
 		ShipInstance* getAssignedShip(u32 pos);
+		void setAssignedShip(ShipInstance* inst, u32 pos);
+		void removeAssignedShip(u32 pos);
 
 		bool assignWingmanToShip(WingmanData* wingman, ShipInstance* ship);
 
 		u32 getDifficulty() { return currentDifficulty; }
 
-		const std::list<ShipInstance*>& const ships() { return m_ships; }
-		const std::list<WingmanData*>& const wingmen() { return m_wingmen; }
-		const std::list<WeaponInstance*>& const weapons() { return m_weapons; }
-		const std::list<WeaponInstance*>& const physWeapons() { return m_physWeapons; }
+		const std::list<ShipInstance*>& ships() { return m_ships; }
+		const std::list<WingmanData*>& wingmen() { return m_wingmen; }
+		const std::list<WeaponInstance*>& weapons() { return m_weapons; }
+		const std::list<WeaponInstance*>& physWeapons() { return m_physWeapons; }
 	private:
+
+		void m_buildShipInstanceFromData(ShipData* data, ShipInstance* inst);
 		Sector* currentSector;
 		u32 currentDifficulty;
-		u32 ammunition;
+		s32 ammunition;
 		f32 supplies;
 
 		WingmanData* assignedWingmen[MAX_WINGMEN];

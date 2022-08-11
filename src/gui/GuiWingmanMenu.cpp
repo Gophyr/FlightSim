@@ -33,7 +33,7 @@ bool GuiWingmanMenu::backToMenu(const SEvent& event)
 	if (event.GUIEvent.EventType != EGET_BUTTON_CLICKED) return true;
 	//check to make sure all wingmen here have an assigned ship
 	for (u32 i = 0; i < 3; ++i) {
-		if (stateController->campaign.assignedWingmen[i] && !stateController->campaign.assignedShips[i]) {
+		if (campaign->getAssignedWingman(i) && !campaign->getAssignedShip(i)) {
 			guiController->setOkPopup(
 				"Missing Ship",
 				"One or more of your wingmen doesn't have a ship selected! You can't just hurl them into space!",
@@ -66,26 +66,23 @@ bool GuiWingmanMenu::onWingmanSelect(const SEvent& event)
 	if (event.GUIEvent.EventType != EGET_BUTTON_CLICKED) return true;
 	s32 id = event.GUIEvent.Caller->getID();
 	clearDisplayedList();
-	if (id == -1) {
-		if (stateController->campaign.assignedWingmen[currentSlot]) {
-			stateController->campaign.assignedWingmen[currentSlot]->assigned = false;
-			stateController->campaign.assignedWingmen[currentSlot] = nullptr;
-			stateController->campaign.assignedShips[currentSlot] = nullptr;
+	if (id == -1) { //the wingman has been de-selected
+		if (campaign->getAssignedWingman(currentSlot)) {
+			campaign->removeAssignedWingman(currentSlot);
+			campaign->removeAssignedShip(currentSlot);
 		}
 		displayWingStatus();
 		return false;
 	}
-	if (stateController->campaign.assignedWingmen[currentSlot]) {
-		stateController->campaign.assignedWingmen[currentSlot]->assigned = false;
-		stateController->campaign.assignedShips[currentSlot] = nullptr;
+	if (campaign->getAssignedWingman(currentSlot)) {
+		campaign->removeAssignedWingman(currentSlot);
 	}
-	for (WingmanData* dat : stateController->campaign.wingmen) {
+	for (WingmanData* dat : campaign->wingmen()) {
 		if (dat->id == (u32)id) {
-			stateController->campaign.assignedWingmen[currentSlot] = dat;
+			campaign->setAssignedWingman(dat, currentSlot);
 			if (dat->assignedShip) {
-				stateController->campaign.assignedShips[currentSlot] = dat->assignedShip;
+				campaign->setAssignedShip(dat->assignedShip, currentSlot);
 			}
-			dat->assigned = true;
 			break;
 		}
 	}
@@ -102,7 +99,7 @@ bool GuiWingmanMenu::onShipChange(const SEvent& event)
 {
 	if (event.GUIEvent.EventType != EGET_BUTTON_CLICKED) return true;
 	currentSlot = event.GUIEvent.Caller->getID();
-	if (!stateController->campaign.assignedWingmen[currentSlot]) {
+	if (!campaign->getAssignedWingman(currentSlot)) {
 		guiController->setOkPopup("No Wingman Selected", 
 			"You can't select a ship for a nonexistent wingman!", 
 			"Oh, right");
@@ -118,7 +115,7 @@ bool GuiWingmanMenu::onShipSelect(const SEvent& event)
 	clearDisplayedList();
 	s32 id = event.GUIEvent.Caller->getID();
 	if (id < 0) {
-		auto assigned = stateController->campaign.assignedShips[currentSlot];
+		auto assigned = campaign->getAssignedShip(currentSlot);
 		if (assigned) {
 			if (assigned->inUseBy) {
 				assigned->inUseBy->assignedShip = nullptr;
@@ -129,11 +126,10 @@ bool GuiWingmanMenu::onShipSelect(const SEvent& event)
 		return false;
 	}
 	else {
-		for (auto inst : stateController->campaign.ships) {
+		for (auto inst : campaign->ships()) {
 			if (inst->id == (u32)id) {
-				stateController->campaign.assignedShips[currentSlot] = inst;
-				inst->inUseBy = stateController->campaign.assignedWingmen[currentSlot];
-				inst->inUseBy->assignedShip = inst;
+				campaign->assignWingmanToShip(campaign->getAssignedWingman(currentSlot), inst);
+				campaign->setAssignedShip(inst, currentSlot);
 				break;
 			}
 		}
@@ -158,7 +154,7 @@ void GuiWingmanMenu::displayWingmen()
 
 	u32 horizPos = (u32)(30.f / 960.f * root->getAbsolutePosition().getWidth());
 	u32 vertPos = (u32)(30.f / 540.f * root->getAbsolutePosition().getHeight());
-	for (WingmanData* man : stateController->campaign.wingmen) {
+	for (WingmanData* man : campaign->wingmen()) {
 		if (man->assigned) continue;
 		IGUIButton* newButton = guienv->addButton(rect<s32>(position2di(horizPos, vertPos + num * vertPos), buttonSize), menuDisplay, 
 			man->id, wstr(man->name).c_str(), L"Select this wingman.");
@@ -185,9 +181,9 @@ void GuiWingmanMenu::displayShips()
 
 	u32 horizPos = (u32)(30.f / 960.f * root->getAbsolutePosition().getWidth());
 	u32 vertPos = (u32)(30.f / 540.f * root->getAbsolutePosition().getHeight());
-	for (auto inst : stateController->campaign.ships) {
+	for (auto inst : campaign->ships()) {
 		if (inst->inUseBy) continue;
-		std::wstring name = wstr(stateController->shipData[inst->ship.shipDataId]->name);
+		std::wstring name = wstr(shipData[inst->ship.shipDataId]->name);
 		IGUIButton* newButton = guienv->addButton(rect<s32>(position2di(horizPos, vertPos + num * vertPos), buttonSize), menuDisplay,
 			(s32)inst->id, name.c_str(), L"Select this ship.");
 		++num;
@@ -214,15 +210,15 @@ void GuiWingmanMenu::clearDisplayedList()
 void GuiWingmanMenu::displayWingStatus()
 {
 	for (u32 i = 0; i < 3; ++i) {
-		if (stateController->campaign.assignedWingmen[i]) {
-			wingButtons[i].wingman->setText(wstr(stateController->campaign.assignedWingmen[i]->name).c_str());
+		if (campaign->getAssignedWingman(i)) {
+			wingButtons[i].wingman->setText(wstr(campaign->getAssignedWingman(i)->name).c_str());
 		}
 		else {
 			wingButtons[i].wingman->setText(L"None");
 		}
-		if (stateController->campaign.assignedShips[i]) {
-			auto inst = stateController->campaign.assignedShips[i];
-			std::wstring name = wstr(stateController->shipData[inst->ship.shipDataId]->name);
+		if (campaign->getAssignedShip(i)) {
+			auto inst = campaign->getAssignedShip(i);
+			std::wstring name = wstr(shipData[inst->ship.shipDataId]->name);
 			wingButtons[i].ship->setText(name.c_str());
 		}
 		else {

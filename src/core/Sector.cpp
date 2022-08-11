@@ -10,10 +10,6 @@ bool Sector::advance()
 	if (encounterNum >= 7) return true;
 	return false;
 }
-Scenario Sector::getScenario(u32 pos)
-{
-	return scenarioOptions[pos];
-}
 
 void Sector::finishScenario()
 {

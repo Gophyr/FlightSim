@@ -49,7 +49,7 @@ flecs::entity createHumanCarrier(u32 carrId, vector3df pos, vector3df rot)
 	auto carrier = createCarrierFromId(carrId, pos, rot);
 	auto ship = carrier.get_mut<ShipComponent>();
 	auto hards = carrier.get_mut<HardpointComponent>();
-	CarrierData* carr = stateController->carrierData[ship->shipDataId];
+	CarrierData* carr = carrierData[ship->shipDataId];
 	auto irr = carrier.get_mut<IrrlichtComponent>();
 	irr->name = carr->name;
 	initializeShipCollisionBody(carrier, carrId, true);
@@ -57,7 +57,8 @@ flecs::entity createHumanCarrier(u32 carrId, vector3df pos, vector3df rot)
 	carrier.set<CarrierComponent>(carr->carrierComponent);
 	//initializeCarrier(carrier, carr->carrierComponent.spawnRate, carr->carrierComponent.reserveShips, carr->carrierComponent.scale);
 
-	ShipInstance* inst = newShipInstance();
+	/*
+	ShipInstance* inst = campaign->createNewShipInstance(true);
 	for (u32 i = 0; i < inst->hards.hardpointCount; ++i) {
 		inst->weps[i] = stateController->weaponData[3]->weaponComponent;
 	}
@@ -66,7 +67,7 @@ flecs::entity createHumanCarrier(u32 carrId, vector3df pos, vector3df rot)
 	carrcmp->shipTypeCount = 1;
 	carrcmp->spawnShipTypes[0] = *inst;
 	delete inst;
-
+	*/
 	initializePlayerFaction(carrier);
 	initializeDefaultSensors(carrier);
 	initializeDefaultAI(carrier);
@@ -77,7 +78,7 @@ flecs::entity createAlienCarrier(u32 carrId, vector3df pos, vector3df rot)
 {
 	auto carrier = createCarrierFromId(carrId, pos, rot);
 	auto ship = carrier.get_mut<ShipComponent>();
-	CarrierData* carr = stateController->carrierData[ship->shipDataId];
+	CarrierData* carr = carrierData[ship->shipDataId];
 	auto irr = carrier.get_mut<IrrlichtComponent>();
 	irr->name = carr->name;
 
@@ -85,12 +86,12 @@ flecs::entity createAlienCarrier(u32 carrId, vector3df pos, vector3df rot)
 	initializeHealth(carrier, carr->health);
 	carrier.set<CarrierComponent>(carr->carrierComponent);
 
-	ShipInstance* inst = newShipInstance();
-	inst->ship = stateController->shipData[1]->shipComponent;
-	inst->hards = stateController->shipData[1]->hardpointComponent;
+	ShipInstance* inst = campaign->createNewShipInstance(true);
+	inst->ship = shipData[1]->shipComponent;
+	inst->hards = shipData[1]->hardpointComponent;
 
 	for (u32 i = 0; i < inst->hards.hardpointCount; ++i) {
-		inst->weps[i] = stateController->weaponData[1]->weaponComponent;
+		inst->weps[i] = campaign->createNewWeaponInstance(weaponData[1]->weaponComponent, true);
 	}
 
 	auto carrcmp = carrier.get_mut<CarrierComponent>();

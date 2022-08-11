@@ -26,39 +26,41 @@ void GuiLootMenu::show()
 	root->setRelativePosition(rect<s32>(position2di(0, 0), driver->getScreenSize()));
 	root->setVisible(true);
 
-	Scenario& scen = stateController->campaign.currentScenario;
+	Scenario scen = campaign->getSector()->getCurrentScenario();
 	u32 wepsRecovered = 0; 
 	if(scen.maxWepsRecovered > 0) wepsRecovered = std::rand() % scen.maxWepsRecovered;
 	u32 shipsRecovered = 0; 
 	if (scen.maxShipsRecovered > 0) shipsRecovered = std::rand() % scen.maxShipsRecovered;
 	for (u32 i = 0; i < wepsRecovered; ++i) {
-		weps.push_back(randomWeapon());
+		auto wepinst = campaign->createRandomWeaponInstance();
+		weps.push_back(wepinst->wep);
+		campaign->addWeapon(wepinst);
 	}
 	for (u32 i = 0; i < shipsRecovered; ++i) {
-		ships.push_back(randomShipInstance());
+		auto shipinst = campaign->createRandomShipInstance();
+		ships.push_back(shipinst);
+		campaign->addShipInstanceToHangar(shipinst);
 	}
 	std::string txt = "Objective Completed \n \n";
 	txt += "\n Ammo recovered: " + std::to_string(scen.ammoRecovered);
-	stateController->campaign.totalAmmunition += scen.ammoRecovered;
+	campaign->addAmmo(scen.ammoRecovered);
 	txt += "\n Resources recovered: " + fprecis(scen.resourcesRecovered, 5);
-	stateController->campaign.totalRepairCapacity += scen.resourcesRecovered;
+	campaign->addSupplies(scen.resourcesRecovered);
 
 	if (wepsRecovered > 0) {
 		txt += "\n \n Weapons recovered:";
 		for (WeaponInfoComponent wep : weps) {
-			txt += "\n" + stateController->weaponData[wep.wepDataId]->name;
+			txt += "\n" + weaponData[wep.wepDataId]->name;
 			if (wep.usesAmmunition) {
 				txt += " Ammo: " + std::to_string(wep.ammunition);
 			}
-			stateController->campaign.availableWeapons.push_back(wep);
 		}
 	}
 	if (shipsRecovered > 0) {
 		txt += "\n \n Ships recovered:";
 		for (ShipInstance* inst : ships) {
-			txt += "\n" + stateController->shipData[inst->ship.shipDataId]->name;
+			txt += "\n" + shipData[inst->ship.shipDataId]->name;
 			txt += " Health: " + fprecis(inst->hp.health, 5);
-			stateController->campaign.ships.push_back(inst);
 		}
 	}
 	loot->setText(wstr(txt).c_str());

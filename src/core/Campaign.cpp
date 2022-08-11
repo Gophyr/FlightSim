@@ -1,16 +1,16 @@
 #include "Campaign.h"
 #include "GameStateController.h"
 
-void Campaign::addAmmo(u32 amt)
+void Campaign::addAmmo(s32 amt)
 {
 	ammunition += amt;
 }
-u32 Campaign::removeAmmo(u32 amt)
+s32 Campaign::removeAmmo(s32 amt)
 {
 	ammunition -= amt;
 	if (ammunition < 0) {
-		ammunition = 0;
 		u32 ret = amt + ammunition;
+		ammunition = 0;
 		return ret;
 	}
 	return amt;
@@ -23,8 +23,8 @@ f32 Campaign::removeSupplies(f32 amt)
 {
 	supplies -= amt;
 	if (supplies < 0) {
-		supplies = 0;
 		f32 ret = amt + supplies;
+		supplies = 0;
 		return ret;
 	}
 	return amt;
@@ -51,11 +51,16 @@ ShipInstance* Campaign::createNewShipInstance(bool templateShip)
 	return ship;
 }
 
-WeaponInstance* Campaign::createNewWeaponInstance(WeaponInfoComponent wep)
+WeaponInstance* Campaign::createNewWeaponInstance(WeaponInfoComponent wep, bool templateWep)
 {
-	if(wep.wepDataId != 0) ++wepCount;
+	if(wep.wepDataId != 0 && !templateWep) ++wepCount;
 	WeaponInstance* ret = new WeaponInstance;
-	ret->id = wepCount;
+	if (wep.wepDataId == 0 || templateWep) {
+		ret->id = 0;
+	}
+	else {
+		ret->id = wepCount;
+	}
 	ret->wep = wep;
 	return ret;
 }
@@ -67,14 +72,28 @@ WeaponInstance* Campaign::createRandomWeaponInstance()
 	return createNewWeaponInstance(weaponData[id]->weaponComponent);
 }
 
+void Campaign::m_buildShipInstanceFromData(ShipData* data, ShipInstance* inst)
+{
+	inst->ship = data->shipComponent;
+	inst->hards = data->hardpointComponent;
+}
+
 ShipInstance* Campaign::buildStarterShip()
 {
 	auto inst = createNewShipInstance();
-	inst->ship = shipData[0]->shipComponent;
-	inst->hards = shipData[0]->hardpointComponent;
+	m_buildShipInstanceFromData(shipData[0], inst);
 	inst->weps[0] = createNewWeaponInstance(weaponData[3]->weaponComponent);
 	inst->weps[1] = createNewWeaponInstance(weaponData[3]->weaponComponent);
 	inst->physWep = createNewWeaponInstance(physWeaponData[1]->weaponComponent);
+	return inst;
+}
+
+ShipInstance* Campaign::createRandomShipInstance()
+{
+	auto inst = createNewShipInstance();
+	u32 shipnum = std::rand() % shipData.size();
+	auto ship = shipData[shipnum];
+	m_buildShipInstanceFromData(ship, inst);
 	return inst;
 }
 
@@ -168,9 +187,33 @@ WingmanData* Campaign::getAssignedWingman(u32 pos)
 {
 	return assignedWingmen[pos];
 }
+void Campaign::setAssignedWingman(WingmanData* man, u32 pos)
+{
+	assignedWingmen[pos] = man;
+	man->assigned = true;
+}
+void Campaign::removeAssignedWingman(u32 pos)
+{
+	if (assignedWingmen[pos]) {
+		assignedWingmen[pos]->assignedShip = nullptr;
+		assignedWingmen[pos]->assigned = false;
+	}
+	assignedWingmen[pos] = nullptr;
+}
 ShipInstance* Campaign::getAssignedShip(u32 pos)
 {
 	return assignedShips[pos];
+}
+void Campaign::setAssignedShip(ShipInstance* inst, u32 pos)
+{
+	assignedShips[pos] = inst;
+}
+void Campaign::removeAssignedShip(u32 pos)
+{
+	if (assignedShips[pos]) {
+		assignedShips[pos]->inUseBy = nullptr;
+	}
+	assignedShips[pos] = nullptr;
 }
 
 bool Campaign::assignWingmanToShip(WingmanData* wingman, ShipInstance* ship)

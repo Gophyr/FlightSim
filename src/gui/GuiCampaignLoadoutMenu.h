@@ -13,7 +13,7 @@ struct ShipSelector
 	IGUIButton* right;
 	IGUIStaticText* name;
 	IGUIButton* useShip;
-	s32 curPos = 0;
+	std::list<ShipInstance*>::const_iterator curPos;
 };
 
 struct WepSelect
