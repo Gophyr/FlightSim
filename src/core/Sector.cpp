@@ -40,6 +40,6 @@ void Sector::finishScenario()
 void DebrisSector::buildScenarios()
 {
 	for (u32 i = 0; i < NUM_SCENARIO_OPTIONS; ++i) {
-
+		scenarioOptions[i] = randomScenario(SCENENV_DEBRIS_FIELD);
 	}
 }

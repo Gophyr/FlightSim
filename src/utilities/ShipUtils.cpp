@@ -248,6 +248,8 @@ flecs::entity createShipFromInstance(ShipInstance& inst, vector3df pos, vector3d
 	HardpointComponent* hards = id.get_mut<HardpointComponent>();
 	*ship = inst.ship;
 	for (u32 i = 0; i < hards->hardpointCount; ++i) {
+		if (!inst.weps[i]) continue;
+
 		WeaponInfoComponent wepReplace = inst.weps[i]->wep;
 		initializeWeaponFromId(wepReplace.wepDataId, id, i);
 		WeaponInfoComponent* wep = hards->weapons[i].get_mut<WeaponInfoComponent>();
@@ -260,7 +262,7 @@ flecs::entity createShipFromInstance(ShipInstance& inst, vector3df pos, vector3d
 	*hp = inst.hp;
 	initializeShipCollisionBody(id, inst.ship.shipDataId);
 
-	initializeWeaponFromId(inst.physWep->wep.wepDataId, id, 0, true);
+	if(inst.physWep) initializeWeaponFromId(inst.physWep->wep.wepDataId, id, 0, true);
 
 	return id;
 }

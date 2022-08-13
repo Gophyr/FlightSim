@@ -37,7 +37,7 @@ class Sector
 		bool hasMoved() { return moved; }
 
 		virtual void buildScenarios() = 0;
-	private:
+	protected:
 		bool moved;
 		u32 encounterNum;
 
@@ -50,8 +50,8 @@ class DebrisSector : public Sector
 {
 	public:
 		DebrisSector() : Sector(SECTOR_DEBRIS) {}
-	private:
 		virtual void buildScenarios();
+	protected:
 };
 
 #endif

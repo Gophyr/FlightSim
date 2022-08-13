@@ -354,7 +354,7 @@ bool GuiCampaignLoadoutMenu::physWepSelect(const SEvent& event, ShipInstance* in
 		campaign->removeWeapon(winst);
 	}
 	if (inst->physWep->wep.type != WEP_NONE) {
-		campaign->addWeapon(winst);
+		campaign->addWeapon(inst->physWep);
 	}
 	inst->physWep = winst;
 
