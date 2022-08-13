@@ -267,6 +267,7 @@ void Campaign::newCampaign()
 	addShipInstanceToHangar(buildStarterShip());
 	addWeapon(createNewWeaponInstance(weaponData[0]->weaponComponent));
 	addWeapon(createNewWeaponInstance(physWeaponData[0]->weaponComponent));
+	addWeapon(createNewWeaponInstance(physWeaponData[2]->weaponComponent));
 
 	std::cout << "Loading wingmen... \n";
 	std::string wingmanPath = "attributes/wingmen/";
@@ -289,7 +290,12 @@ void Campaign::newCampaign()
 void Campaign::returnToCampaign()
 {
 	getSector()->finishScenario();
-	++campaign->currentDifficulty;
+	++currentDifficulty;
+}
+
+bool Campaign::advance()
+{
+	return currentSector->advance();
 }
 
 bool Campaign::saveCampaign(std::string fname)

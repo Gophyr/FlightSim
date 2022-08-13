@@ -107,6 +107,9 @@ void GuiCampaignLoadoutMenu::show()
 
 void GuiCampaignLoadoutMenu::displayShip(ShipInstance* inst)
 {
+	if (!inst) {
+		std::cout << "No ship instance!!\n";
+	}
 	u32 shipId = inst->ship.shipDataId;
 	ShipData* data = shipData[shipId];
 	std::string name = data->name;
@@ -161,7 +164,7 @@ bool GuiCampaignLoadoutMenu::onShipChange(const SEvent& event, bool right)
 	}
 	else {
 		if (shipSelector.curPos == campaign->ships().begin()) {
-			shipSelector.curPos = campaign->ships().end();
+			shipSelector.curPos = --campaign->ships().end();
 		}
 		else {
 			--shipSelector.curPos;
@@ -399,7 +402,7 @@ bool GuiCampaignLoadoutMenu::onReload(const SEvent& event)
 	}
 	u32 id = (u32)event.GUIEvent.Caller->getID();
 	WeaponInfoComponent& wep = getCurShip()->weps[id]->wep;
-	u32 clipsToReload = (wep.maxAmmunition - wep.ammunition) / wep.maxClip;
+	s32 clipsToReload = (wep.maxAmmunition - wep.ammunition) / wep.maxClip;
 	if (clipsToReload == 0) {
 		guiController->setOkPopup("", "This weapon is already full on ammo.");
 		guiController->showOkPopup();

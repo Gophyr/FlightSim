@@ -31,6 +31,7 @@ class Campaign
 		void newCampaign();
 
 		Sector* getSector() {return currentSector;}
+		bool advance(); //advance called from the gui
 		void returnToCampaign(); //returns from a given scenario
 
 		s32 getAmmo() { return ammunition; }
