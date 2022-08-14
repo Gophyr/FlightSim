@@ -176,7 +176,7 @@ void GameStateController::setState(GAME_STATE newState)
 
 void GameStateController::backToCampaign()
 {
-	campaign->returnToCampaign();
+	campaign->getSector()->finishScenario();
 	returningToCampaign = true;
 	setState(GAME_MENUS);
 }
@@ -200,7 +200,6 @@ void GameStateController::stateChange() //Messy handler for the different states
 		guiController->close();
 		gameController->init();
 		gameController->initScenario();
-		//gameController->initDefaultScene();
 	}
 	else if (oldState == GAME_PAUSED && state == GAME_MENUS) {
 		gameController->close();

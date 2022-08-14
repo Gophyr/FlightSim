@@ -7,7 +7,10 @@ bool Sector::advance()
 	++encounterNum;
 	buildScenarios();
 	moved = true;
-	if (encounterNum >= 7) return true;
+	if (encounterNum >= 3) {
+		m_sectorComplete = true;
+		return true;
+	}
 	return false;
 }
 
@@ -41,5 +44,26 @@ void DebrisSector::buildScenarios()
 {
 	for (u32 i = 0; i < NUM_SCENARIO_OPTIONS; ++i) {
 		scenarioOptions[i] = randomScenario(SCENENV_DEBRIS_FIELD);
+	}
+}
+
+void DebrisSector::buildFinalScenario()
+{
+	for (u32 i = 0; i < NUM_SCENARIO_OPTIONS; ++i) {
+		scenarioOptions[i] = randomScenario(SCENENV_DEBRIS_FIELD, true);
+	}
+}
+
+void AsteroidSector::buildScenarios()
+{
+	for (u32 i = 0; i < NUM_SCENARIO_OPTIONS; ++i) {
+		scenarioOptions[i] = randomScenario(SCENENV_ASTEROID_FIELD);
+	}
+}
+
+void AsteroidSector::buildFinalScenario()
+{
+	for (u32 i = 0; i < NUM_SCENARIO_OPTIONS; ++i) {
+		scenarioOptions[i] = randomScenario(SCENENV_ASTEROID_FIELD, true);
 	}
 }

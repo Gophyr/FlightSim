@@ -21,7 +21,8 @@ Scenario randomScenario(SCENARIO_ENVIRONMENT env, bool scramble)
 	std::string description = in.values[location];
 	description += "\n";
 	description += in.values[scenarioStrings.at(type)];
-	u32 objCount = std::rand() % (campaign->getDifficulty() * 3) + 1;
+	u32 objCount = std::rand() % ((campaign->getDifficulty() * 3) + 1);
+	std::cout << objCount << std::endl;
 	if (objCount > SCENARIO_MAX_OBJECTIVES) objCount = SCENARIO_MAX_OBJECTIVES;
 
 	if (scramble) objCount = 1; //being the single carrier needed to be taken out

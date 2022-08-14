@@ -26,6 +26,7 @@ class Sector
 		}
 		SECTOR_TYPE getType() { return type; }
 		virtual bool advance(); //returns true if we're at the end of the sector
+		bool sectorComplete() { return m_sectorComplete; }
 		Scenario getCurrentScenario() { return *currentScenario; }
 		Scenario getScenario(u32 pos) { return scenarioOptions[pos]; }
 		void finishScenario();
@@ -37,8 +38,10 @@ class Sector
 		bool hasMoved() { return moved; }
 
 		virtual void buildScenarios() = 0;
+		virtual void buildFinalScenario() = 0;
 	protected:
 		bool moved;
+		bool m_sectorComplete;
 		u32 encounterNum;
 
 		Scenario scenarioOptions[NUM_SCENARIO_OPTIONS];
@@ -51,7 +54,17 @@ class DebrisSector : public Sector
 	public:
 		DebrisSector() : Sector(SECTOR_DEBRIS) {}
 		virtual void buildScenarios();
+		virtual void buildFinalScenario();
 	protected:
+};
+
+class AsteroidSector : public Sector
+{
+public:
+	AsteroidSector() : Sector(SECTOR_ASTEROID) {}
+	virtual void buildScenarios();
+	virtual void buildFinalScenario();
+protected:
 };
 
 #endif

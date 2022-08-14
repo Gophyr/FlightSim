@@ -1,0 +1,16 @@
+model=machinegun/gun.obj
+texture=machinegun/guntexture.png
+norm=machinegun/gunnorm.png
+particle=particlered.bmp
+sound=laser.ogg
+
+id=5
+phys=0
+name=Dev Blaster
+description=Sometimes, the developers just need to blitz through the game.
+type=plasma
+dmgtype=plasma
+firingSpeed=.1
+projectileSpeed=80
+lifetime=1.5
+damage=300

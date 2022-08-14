@@ -82,8 +82,8 @@ ShipInstance* Campaign::buildStarterShip()
 {
 	auto inst = createNewShipInstance();
 	m_buildShipInstanceFromData(shipData[0], inst);
-	inst->weps[0] = createNewWeaponInstance(weaponData[3]->weaponComponent);
-	inst->weps[1] = createNewWeaponInstance(weaponData[3]->weaponComponent);
+	inst->weps[0] = createNewWeaponInstance(weaponData[5]->weaponComponent);
+	inst->weps[1] = createNewWeaponInstance(weaponData[5]->weaponComponent);
 	inst->physWep = createNewWeaponInstance(physWeaponData[1]->weaponComponent);
 	return inst;
 }
@@ -287,15 +287,34 @@ void Campaign::newCampaign()
 	std::cout << "Done loading wingmen. \n";
 	std::cout << "Done loading campaign. \n";
 }
+
+void Campaign::m_buildNextSector()
+{
+	SECTOR_TYPE curType = currentSector->getType();
+	delete currentSector;
+
+	switch (curType) {
+	case SECTOR_DEBRIS:
+		currentSector = new AsteroidSector;
+		break;
+	default:
+		currentSector = new DebrisSector;
+		break;
+	}
+}
 void Campaign::returnToCampaign()
 {
-	getSector()->finishScenario();
+	//getSector()->finishScenario();
+	if (getSector()->sectorComplete()) {
+		m_buildNextSector();
+	}
 	++currentDifficulty;
 }
 
 bool Campaign::advance()
 {
-	return currentSector->advance();
+	bool bossFight = currentSector->advance();
+	return bossFight;
 }
 
 bool Campaign::saveCampaign(std::string fname)

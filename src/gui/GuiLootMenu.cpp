@@ -69,6 +69,7 @@ void GuiLootMenu::show()
 bool GuiLootMenu::onReturnToCampaign(const SEvent& event)
 {
 	if (event.GUIEvent.EventType != EGET_BUTTON_CLICKED) return true;
+	campaign->returnToCampaign();
 	guiController->setActiveDialog(GUI_CAMPAIGN_MENU);
 	return false;
 }

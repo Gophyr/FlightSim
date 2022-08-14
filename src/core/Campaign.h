@@ -78,6 +78,7 @@ class Campaign
 	private:
 
 		void m_buildShipInstanceFromData(ShipData* data, ShipInstance* inst);
+		void m_buildNextSector();
 		Sector* currentSector;
 		u32 currentDifficulty;
 		s32 ammunition;
