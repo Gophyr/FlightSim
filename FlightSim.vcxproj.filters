@@ -160,6 +160,9 @@
     <ClCompile Include="src\core\Sector.cpp">
       <Filter>Sources\Core</Filter>
     </ClCompile>
+    <ClCompile Include="src\core\Dialogue.cpp">
+      <Filter>Sources\Core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\systems\AIUpdateSystem.h">
@@ -409,6 +412,9 @@
       <Filter>Headers\Systems</Filter>
     </ClInclude>
     <ClInclude Include="src\core\Sector.h">
+      <Filter>Headers\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\core\Dialogue.h">
       <Filter>Headers\Core</Filter>
     </ClInclude>
   </ItemGroup>

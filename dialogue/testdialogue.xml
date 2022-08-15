@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tree id="test_dialogue_1" minsector="0"/>
+    <speaker name="Walter" />
+    <node id="root">
+        <speaker name="Walter"/>
+        <text text="Sir, we believe we have the XML file parsed, but we'd like you to give it a once-over to make sure."/>
+        <choice text="You got it." next="xml_response_1" effect="none"/>
+        <choice text="I don't think it worked." next="xml_response_2" effect="none" />
+        <choice text="I'm outta here." next="none" effect="exit"/>
+    </node>
+    <node id="xml_response_1">
+        <speaker name="Walter"/>
+        <text text="Glad to hear it. Let me know if there are any problems with it in the future."/>
+        <choice text="Will do." next="none" effect="exit"/>
+    </node>
+    <node id="xml_response_2">
+        <speaker name="Walter"/>
+        <text text="Well, that doesn't seem right. Let me see here..."/>
+        <choice text="[Continue]" next="xml_response_2_continued" effect="none"/>
+    </node>
+    <node id="xml_response_2_continued">
+        <speaker name="Walter"/>
+        <text text="There. That should be working now."/>
+        <choice text="Thanks, Walter." next="none" effect="exit"/>
+    </node>
+</tree>

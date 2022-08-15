@@ -155,6 +155,7 @@
   <ItemGroup>
     <ClCompile Include="src\components\PlayerComponent.cpp" />
     <ClCompile Include="src\core\Campaign.cpp" />
+    <ClCompile Include="src\core\Dialogue.cpp" />
     <ClCompile Include="src\core\flecs.c" />
     <ClCompile Include="src\core\GameAssets.cpp" />
     <ClCompile Include="src\core\Networking.cpp" />
@@ -224,6 +225,7 @@
     <ClInclude Include="src\components\ShipParticleComponent.h" />
     <ClInclude Include="src\components\HardpointComponent.h" />
     <ClInclude Include="src\core\Campaign.h" />
+    <ClInclude Include="src\core\Dialogue.h" />
     <ClInclude Include="src\core\flecs.h" />
     <ClInclude Include="src\core\Sector.h" />
     <ClInclude Include="src\core\SystemsHeader.h" />
