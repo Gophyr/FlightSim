@@ -66,7 +66,6 @@ class DialogueTree
 			}
 		}
 		*/
-		const DialogueNode* start() { return m_start; }
 		const bool isUsed() { return m_used; }
 		const u32 minSector() { return m_minSector; }
 		const std::vector<std::wstring> speakers() { return m_speakers; }
@@ -81,7 +80,6 @@ class DialogueTree
 		DialogueChoice m_parseChoiceInfo(IrrXMLReader* xml);
 
 		std::wstring m_id;
-		DialogueNode* m_start;
 		bool m_used;
 		std::vector<std::wstring> m_speakers;
 		std::unordered_map<std::wstring, DialogueNode> m_allNodes; //not accessible from the outside; dialogue should trawl the tree
