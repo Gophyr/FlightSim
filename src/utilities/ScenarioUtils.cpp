@@ -4,25 +4,21 @@
 #include "LoadoutData.h"
 #include "ShipUtils.h"
 
-Scenario randomScenario(SCENARIO_ENVIRONMENT env, bool scramble)
+Scenario randomScenario(SECTOR_TYPE env, bool scramble)
 {
 	gvReader in;
 	in.read("attributes/scenarios/scenariodesc.gdat");
 	in.readLinesToValues();
 	SCENARIO_TYPE type = static_cast<SCENARIO_TYPE>(std::rand() % SCENARIO_MAX_TYPES);
 	if (type == SCENARIO_MAX_TYPES) type = SCENARIO_KILL_HOSTILES;
-	/*
-	SCENARIO_ENVIRONMENT env = static_cast<SCENARIO_ENVIRONMENT>(std::rand() % SCENENV_MAX_ENVIRONMENTS);
-	if (env == SCENENV_MAX_ENVIRONMENTS) env = SCENENV_ASTEROID_FIELD;
-	*/
+
 	if (scramble) type = SCENARIO_SCRAMBLE;
 
 	std::string location = scenarioEnvStrings.at(env);
-	std::string description = in.values[location];
+	std::string description = in.getString(location);
 	description += "\n";
 	description += in.values[scenarioStrings.at(type)];
 	u32 objCount = std::rand() % ((campaign->getDifficulty() * 3) + 1);
-	std::cout << objCount << std::endl;
 	if (objCount > SCENARIO_MAX_OBJECTIVES) objCount = SCENARIO_MAX_OBJECTIVES;
 
 	if (scramble) objCount = 1; //being the single carrier needed to be taken out
@@ -32,18 +28,7 @@ Scenario randomScenario(SCENARIO_ENVIRONMENT env, bool scramble)
 	Scenario scen(type, env, objCount, player, enemy);
 
 	in.clear();
-	std::string path = "attributes/scenarios/environments/" + location + ".gdat";
-	in.read(path);
-	in.readLinesToValues();
-	scen.detectionChance = in.getInt("detectionChance") + (1*std::rand() % campaign->getDifficulty());
-	if (scramble) scen.detectionChance = 0; //The man has already got you.
-	scen.ammoRecovered = in.getInt("ammoRecovered") * (1 * std::rand() % campaign->getDifficulty());
-	scen.resourcesRecovered = in.getFloat("resourcesRecovered");
-	scen.maxWepsRecovered = in.getInt("maxWeaponsRecovered");
-	scen.maxShipsRecovered = in.getInt("maxShipsRecovered");
-
-	in.clear();
-	path = "attributes/scenarios/objectives/" + scenarioStrings.at(type) + ".gdat";
+	std::string path = "attributes/scenarios/objectives/" + scenarioStrings.at(type) + ".gdat";
 	in.read(path);
 	in.readLinesToValues();
 	scen.ammoRecovered += in.getUint("ammoRecovered") * (1 + std::rand() % campaign->getDifficulty());
@@ -51,14 +36,24 @@ Scenario randomScenario(SCENARIO_ENVIRONMENT env, bool scramble)
 	scen.maxWepsRecovered += in.getInt("maxWeaponsRecovered");
 	scen.maxShipsRecovered += in.getInt("maxShipsRecovered");
 
-	if(env != SCENENV_EMPTY) setObstaclePositions(scen);
+	path = "attributes/scenarios/environments/" + location + ".gdat";
+	in.read(path);
+	in.readLinesToValues();
+	scen.detectionChance = in.getInt("detectionChance") + (1 * std::rand() % campaign->getDifficulty());
+	if (scramble) scen.detectionChance = 0; //The man has already got you.
+	scen.ammoRecovered = in.getInt("ammoRecovered") * (1 * std::rand() % campaign->getDifficulty());
+	scen.resourcesRecovered = in.getFloat("resourcesRecovered");
+	scen.maxWepsRecovered = in.getInt("maxWeaponsRecovered");
+	scen.maxShipsRecovered = in.getInt("maxShipsRecovered");
 
-	scen.location = location;
+	setObstaclePositions(scen);
+
+	scen.location = in.getString("name");
 	scen.description = description;
 	return scen;
 }
 
-Scenario scrambleScenario(SCENARIO_ENVIRONMENT env) //for convenience
+Scenario scrambleScenario(SECTOR_TYPE env) //for convenience
 {
 	return randomScenario(env, true);
 }
@@ -75,8 +70,6 @@ void buildScenario(Scenario& scenario)
 		if (!campaign->getAssignedWingman(i) || !campaign->getAssignedShip(i)) continue;
 		wingpos.X += 15.f;
 		flecs::entity wingman = createWingmanFromInstance(i, player, wingpos, vector3df(0, 0, 0));
-		//auto ai = wingman.get_mut<AIComponent>();
-		//ai->wingCommander = player;
 	}
 
 	cullStartPosObstacleLocations(scenario);
@@ -94,13 +87,13 @@ void setEnvironment(Scenario& scenario)
 {
 	std::cout << "Setting environment... \n";
 	switch (scenario.environment) {
-	case SCENENV_ASTEROID_FIELD:
+	case SECTOR_ASTEROID:
 		buildAsteroidField(scenario);
 		break;
-	case SCENENV_GAS_FIELD:
+	case SECTOR_GAS:
 		buildGasField(scenario);
 		break;
-	case SCENENV_DEBRIS_FIELD:
+	case SECTOR_DEBRIS:
 		buildDebrisField(scenario);
 		break;
 	default:

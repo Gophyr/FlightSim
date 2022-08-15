@@ -7,7 +7,8 @@ bool Sector::advance()
 	++encounterNum;
 	buildScenarios();
 	moved = true;
-	if (encounterNum >= 3) {
+	if (encounterNum >= MAX_ENCOUNTERS) {
+		buildBossScenario();
 		m_sectorComplete = true;
 		return true;
 	}
@@ -40,30 +41,16 @@ void Sector::finishScenario()
 	moved = false;
 }
 
-void DebrisSector::buildScenarios()
+void Sector::buildScenarios()
 {
 	for (u32 i = 0; i < NUM_SCENARIO_OPTIONS; ++i) {
-		scenarioOptions[i] = randomScenario(SCENENV_DEBRIS_FIELD);
+		scenarioOptions[i] = randomScenario(type);
 	}
 }
 
-void DebrisSector::buildFinalScenario()
+void Sector::buildBossScenario()
 {
 	for (u32 i = 0; i < NUM_SCENARIO_OPTIONS; ++i) {
-		scenarioOptions[i] = randomScenario(SCENENV_DEBRIS_FIELD, true);
-	}
-}
-
-void AsteroidSector::buildScenarios()
-{
-	for (u32 i = 0; i < NUM_SCENARIO_OPTIONS; ++i) {
-		scenarioOptions[i] = randomScenario(SCENENV_ASTEROID_FIELD);
-	}
-}
-
-void AsteroidSector::buildFinalScenario()
-{
-	for (u32 i = 0; i < NUM_SCENARIO_OPTIONS; ++i) {
-		scenarioOptions[i] = randomScenario(SCENENV_ASTEROID_FIELD, true);
+		scenarioOptions[i] = randomScenario(type, true);
 	}
 }

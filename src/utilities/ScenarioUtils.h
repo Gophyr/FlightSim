@@ -7,9 +7,9 @@
 #include "ObjectiveComponent.h"
 
 //Generates a random scenario.
-Scenario randomScenario(SCENARIO_ENVIRONMENT env, bool scramble = false);
+Scenario randomScenario(SECTOR_TYPE env, bool scramble = false);
 //Generates a scramble scenario for if the player has been detected.
-Scenario scrambleScenario(SCENARIO_ENVIRONMENT env = SCENENV_ASTEROID_FIELD);
+Scenario scrambleScenario(SECTOR_TYPE env);
 
 //Culls the scenario's obstacle list of obstacles from the given position in a sphere within the given radius.
 void cullObstacleLocationsFromPosition(Scenario& scenario, vector3df pos, f32 rad);
