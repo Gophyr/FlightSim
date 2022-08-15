@@ -9,6 +9,7 @@
 #include "LoadoutData.h"
 #include "GameAssets.h"
 #include "Campaign.h"
+#include "Dialogue.h"
 #include <filesystem>
 
 /*

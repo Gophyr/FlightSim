@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <tree id="test_dialogue_1" minsector="0"/>
-    <speaker name="Walter" />
+    <speakers>
+        <speaker name="Walter"/>
+    </speakers>
     <node id="root">
         <speaker name="Walter"/>
         <text text="Sir, we believe we have the XML file parsed, but we'd like you to give it a once-over to make sure."/>

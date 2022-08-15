@@ -198,6 +198,7 @@
     <ClCompile Include="src\utilities\btUtils.cpp" />
     <ClCompile Include="src\utilities\CarrierUtils.cpp" />
     <ClCompile Include="src\utilities\Config.cpp" />
+    <ClCompile Include="src\utilities\DialogueEffects.cpp" />
     <ClCompile Include="src\utilities\GvReader.cpp" />
     <ClCompile Include="src\utilities\GameFunctions.cpp" />
     <ClCompile Include="src\utilities\IrrlichtUtils.cpp" />
@@ -280,6 +281,7 @@
     <ClInclude Include="src\utilities\btUtils.h" />
     <ClInclude Include="src\utilities\CarrierUtils.h" />
     <ClInclude Include="src\utilities\Config.h" />
+    <ClInclude Include="src\utilities\DialogueEffects.h" />
     <ClInclude Include="src\utilities\GvReader.h" />
     <ClInclude Include="src\utilities\GameAssets.h" />
     <ClInclude Include="src\utilities\GameFunctions.h" />
