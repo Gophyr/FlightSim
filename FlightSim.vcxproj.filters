@@ -166,6 +166,9 @@
     <ClCompile Include="src\utilities\DialogueEffects.cpp">
       <Filter>Sources\Utilities</Filter>
     </ClCompile>
+    <ClCompile Include="src\core\AudioDriver.cpp">
+      <Filter>Sources\Core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\systems\AIUpdateSystem.h">
@@ -422,6 +425,9 @@
     </ClInclude>
     <ClInclude Include="src\utilities\DialogueEffects.h">
       <Filter>Headers\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="src\core\AudioDriver.h">
+      <Filter>Headers\Core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

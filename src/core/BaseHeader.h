@@ -21,6 +21,10 @@ using namespace gui;
 #include <Serialize/BulletWorldImporter/btBulletWorldImporter.h>
 #include <irrKlang.h>
 #include <flecs.h>
+
+#include <al.h>
+#include <alc.h>
+
 using namespace irrklang;
 
 #ifdef _MSC_VER
@@ -32,6 +36,8 @@ using namespace irrklang;
 #pragma comment(lib, "LinearMath_Debug.lib")
 #pragma comment(lib, "BulletWorldImporter_Debug.lib")
 #pragma comment(lib, "BulletFileLoader_Debug.lib")
+
+#pragma comment(lib, "irrKlang.lib")
 #else 
 #pragma comment(lib, "BulletDynamics.lib")
 #pragma comment(lib, "BulletCollision.lib")
@@ -41,6 +47,9 @@ using namespace irrklang;
 #endif 
 
 #pragma comment(lib, "irrKlang.lib")
+
+#pragma comment(lib, "OpenAL32.lib")
+#pragma comment(lib, "EFX-Util.lib")
 #endif
 
 #include <unordered_map>
@@ -70,6 +79,8 @@ extern IGUIEnvironment* guienv;
 extern ISoundEngine* soundEngine;
 extern BulletPhysicsWorld* bWorld;
 extern flecs::world* game_world;
+
+
 
 struct ShipData;
 struct CarrierData;

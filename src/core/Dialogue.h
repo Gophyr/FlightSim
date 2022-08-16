@@ -6,8 +6,6 @@
 //Typedef for any sort of function that can be used as part of a dialogue choice. Can be generic or specialized.
 typedef std::function<void()> DialogueCallback;
 
-class DialogueNode;
-
 class DialogueChoice
 {
 	public:
@@ -57,15 +55,8 @@ class DialogueTree
 {
 	public:
 		DialogueTree() {}
-		//read a tree from XML should be the constructor here
+		//reads tree from XML file
 		DialogueTree(std::string filename);
-		/*
-		~DialogueTree() {
-			for (auto [id, node] : m_allNodes) {
-				delete node;
-			}
-		}
-		*/
 		const bool isUsed() { return m_used; }
 		const u32 minSector() { return m_minSector; }
 		const std::vector<std::wstring> speakers() { return m_speakers; }
