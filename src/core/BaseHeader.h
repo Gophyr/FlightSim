@@ -24,6 +24,9 @@ using namespace gui;
 
 #include <al.h>
 #include <alc.h>
+#include <ogg.h>
+#include <vorbisfile.h>
+#include <vorbisenc.h>
 
 using namespace irrklang;
 
@@ -50,6 +53,9 @@ using namespace irrklang;
 
 #pragma comment(lib, "OpenAL32.lib")
 #pragma comment(lib, "EFX-Util.lib")
+#pragma comment(lib, "libogg_static.lib")
+#pragma comment(lib, "libvorbis_static.lib")
+#pragma comment(lib, "libvorbisfile_static.lib")
 #endif
 
 #include <unordered_map>
@@ -61,6 +67,7 @@ class SceneManager;
 class BulletPhysicsWorld;
 class Assets;
 class Campaign;
+class AudioDriver;
 /*
 * These are global variables used from throughout the program to track what exactly is going on.
 */
@@ -80,7 +87,7 @@ extern ISoundEngine* soundEngine;
 extern BulletPhysicsWorld* bWorld;
 extern flecs::world* game_world;
 
-
+extern AudioDriver* audioDriver;
 
 struct ShipData;
 struct CarrierData;

@@ -2,6 +2,7 @@
 #include "GameStateController.h"
 #include "GvReader.h"
 #include "Config.h"
+#include "AudioDriver.h"
 
 GameStateController* stateController = 0;
 GameController* gameController = 0;
@@ -26,6 +27,8 @@ Assets* assets = new Assets;
 
 Campaign* campaign = new Campaign;
 
+AudioDriver* audioDriver = new AudioDriver();
+
 int main()
 {
 	VideoConfig config;
@@ -41,6 +44,9 @@ int main()
 	driver = device->getVideoDriver();
 	smgr = device->getSceneManager();
 	guienv = device->getGUIEnvironment();
+
+	audioDriver->init();
+
 	stateController = new GameStateController(config);
 	stateController->videoConfig = config;
 	stateController->init();
