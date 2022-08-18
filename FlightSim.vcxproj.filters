@@ -167,7 +167,13 @@
       <Filter>Sources\Utilities</Filter>
     </ClCompile>
     <ClCompile Include="src\core\AudioDriver.cpp">
-      <Filter>Sources\Core</Filter>
+      <Filter>Sources\Core\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="src\core\AudioBuffer.cpp">
+      <Filter>Sources\Core\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="src\core\AudioSource.cpp">
+      <Filter>Sources\Core\Audio</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -427,7 +433,13 @@
       <Filter>Headers\Utilities</Filter>
     </ClInclude>
     <ClInclude Include="src\core\AudioDriver.h">
-      <Filter>Headers\Core</Filter>
+      <Filter>Headers\Core\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="src\core\AudioBuffer.h">
+      <Filter>Headers\Core\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="src\core\AudioSource.h">
+      <Filter>Headers\Core\Audio</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -499,6 +511,12 @@
     </Filter>
     <Filter Include="Sources\fx">
       <UniqueIdentifier>{ae21f61c-bd53-441a-861f-8221bffae4ff}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headers\Core\Audio">
+      <UniqueIdentifier>{5a4942a3-a094-475e-9d8b-b22d9d3708d9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\Core\Audio">
+      <UniqueIdentifier>{d777d4fd-1027-415d-8236-88e460494ac0}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

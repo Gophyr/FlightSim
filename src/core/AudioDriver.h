@@ -2,31 +2,8 @@
 #ifndef AUDIODRIVER_H
 #define AUDIODRIVER_H
 #include "BaseHeader.h"
-
-class AudioBuffer
-{
-public:
-	ALuint loadAudio(std::string fname);
-	bool removeAudio(const ALuint& buf);
-	void removeAllAudio();
-private:
-	std::vector<ALuint> buffers;
-};
-
-class AudioSource
-{
-public:
-	AudioSource();
-	~AudioSource();
-	ALuint source;
-	void play(const ALuint bufToPlay);
-	f32 pitch = 1.f;
-	f32 gain = 1.f;
-	f32 position[3] = { 0,0,0 };
-	f32 velocity[3] = { 0,0,0 };
-	bool loop = false;
-	ALuint buf = 0;
-};
+#include "AudioBuffer.h"
+#include "AudioSource.h"
 
 class AudioDriver
 {
@@ -35,8 +12,14 @@ class AudioDriver
 		void init();
 		void audioUpdate();
 
-		AudioBuffer gameSounds;
+		void playGameSound(std::string fname);
+		void playMenuSound(std::string fname);
+		void playMusic(std::string fname); //will halt the current music
 	private:
+		ALuint currentMusic;
+		AudioBuffer gameSounds;
+		AudioBuffer menuSounds;
+		AudioSource musicSource; //should always be on top of the listener
 		ALCcontext* context;
 		ALCdevice* device;
 };
