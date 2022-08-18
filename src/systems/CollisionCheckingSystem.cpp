@@ -13,7 +13,7 @@ void projectileCollider(flecs::entity projectile, flecs::entity impacted)
 
 	handleProjectileImpact(projectile, impacted);
 	if (dmg) dmg->registerDamageInstance(DamageInstance(projectile, impacted, proj->dmgtype, proj->damage, device->getTimer()->getTime()));
-	createProjectileImpactEffect(irr->node->getPosition(), .2f);
+	if(irr) createProjectileImpactEffect(irr->node->getPosition(), .2f);
 	destroyProjectile(projectile);
 }
 

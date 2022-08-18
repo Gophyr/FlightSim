@@ -1,4 +1,5 @@
 #include "AudioSource.h"
+#include <iostream>
 
 AudioSource::AudioSource()
 {
@@ -22,16 +23,25 @@ void AudioSource::play(const ALuint bufToPlay)
 	if (buf != 0) stop();
 
 	buf = bufToPlay;
-
-	alGetError();
+	auto err = alGetError();
 	alSourcei(source, AL_BUFFER, buf);
-	alSourcef(source, AL_PITCH, m_pitch);
-	alSourcef(source, AL_GAIN, m_gain);
+	if (err = alGetError() != AL_NO_ERROR) {
+		std::cerr << "Could not attach buffer to source - error " << err << std::endl;
+	}
+	setPitch(m_pitch);
+	setGain(m_gain);
 	alSource3f(source, AL_POSITION, m_position[0], m_position[1], m_position[2]);
 	alSource3f(source, AL_VELOCITY, m_velocity[0], m_velocity[1], m_velocity[2]);
 	alSourcei(source, AL_LOOPING, m_loop);
 
+	alSourcef(source, AL_MAX_DISTANCE, 100.f);
+	alSourcef(source, AL_REFERENCE_DISTANCE, 100.f);
+
+	err = alGetError();
 	alSourcePlay(source);
+	if (err = alGetError() != AL_NO_ERROR) {
+		std::cerr << "Could not play source!\n";
+	}
 }
 
 void AudioSource::stop()
@@ -45,14 +55,16 @@ void AudioSource::stop()
 void AudioSource::setPos(const vector3df pos) {
 	m_position[0] = pos.X;
 	m_position[1] = pos.Y;
-	m_position[2] = pos.Z;
-	alSource3f(source, AL_POSITION, m_position[0], m_position[1], m_position[2]);
+	m_position[2] = -pos.Z;
+	auto err = alGetError();
+	alSourcefv(source, AL_POSITION, m_position);
 }
 void AudioSource::setVel(const btVector3 vel) {
 	m_velocity[0] = vel.x();
 	m_velocity[1] = vel.y();
-	m_velocity[2] = vel.z();
-	alSource3f(source, AL_VELOCITY, m_velocity[0], m_velocity[1], m_velocity[2]);
+	m_velocity[2] = -vel.z();
+	alGetError();
+	alSourcefv(source, AL_VELOCITY, m_velocity);
 }
 void AudioSource::setPitch(const f32 pitch)
 {
@@ -78,7 +90,7 @@ bool AudioSource::isFinished()
 	alGetError();
 	ALint state;
 	alGetSourcei(source, AL_SOURCE_STATE, &state);
-	if (state == AL_STOPPED) return true;
+	if (state != AL_PLAYING) return true;
 
 	return false;
 }

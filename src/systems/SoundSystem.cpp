@@ -7,6 +7,7 @@ void soundSystem(flecs::iter iter)
 	auto it = audioDriver->curGameSounds.begin();
 	while(it != audioDriver->curGameSounds.end()) {
 		if (it->src.isFinished()) { //if the sound is finished we're done here
+			//std::cout << "erasing sound\n";
 			it = audioDriver->curGameSounds.erase(it);
 			continue;
 		}

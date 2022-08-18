@@ -92,9 +92,10 @@ void AudioDriver::cleanupGameSounds()
 
 void AudioDriver::setListenerPosition(vector3df pos, btVector3 vel)
 {
-	alGetError();
+	auto err = alGetError();
 	alListener3f(AL_POSITION, pos.X, pos.Y, pos.Z);
 	alListener3f(AL_VELOCITY, vel.x(), vel.y(), vel.z());
+
 	musicSource->setPos(pos);
 	musicSource->setVel(vel);
 	menuSource->setPos(pos);
