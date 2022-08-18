@@ -10,7 +10,8 @@ public:
 	bool removeAudio(const ALuint& buf);
 	void removeAllAudio();
 private:
-	std::vector<ALuint> buffers;
+	std::unordered_map<std::string, ALuint> buffers;
+	//std::vector<ALuint> buffers;
 };
 
 #endif 

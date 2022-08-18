@@ -1,11 +1,15 @@
 #include "AudioDriver.h"
 #include <iostream>
 
-void AudioDriver::init()
+const std::string musicPath = "audio/music/";
+const std::string menuSoundPath = "audio/menu/";
+const std::string gameSoundPath = "audio/game/";
+
+AudioDriver::AudioDriver()
 {
-	device = alcOpenDevice(NULL);
+	device = alcOpenDevice(nullptr);
 	if (device) {
-		context = alcCreateContext(device, NULL);
+		context = alcCreateContext(device, nullptr);
 		if (context) {
 			alcMakeContextCurrent(context);
 		}
@@ -16,21 +20,55 @@ void AudioDriver::init()
 	if (!name || alcGetError(device) != AL_NO_ERROR)
 		name = alcGetString(device, ALC_DEVICE_SPECIFIER);
 	std::cout << "Opened audio device: " << name << std::endl;
+
+	musicSource = new AudioSource;
+	menuSource = new AudioSource;
+	musicSource->setLoop(true);
 }
 
-void AudioDriver::playGameSound(std::string fname)
+void AudioDriver::playGameSound(AudioSource source, std::string fname)
 {
-
+	ALuint buf = 0;
+	if (loadedGameSounds.find(fname) != loadedGameSounds.end()) {
+		buf = loadedGameSounds.at(fname);
+	} else {
+		buf = gameSounds.loadAudio(gameSoundPath + fname);
+		if (buf == 0) return;
+		loadedGameSounds[fname] = buf;
+	}
+	//also needs to register the audio source...
+	source.play(buf);
 }
 void AudioDriver::playMenuSound(std::string fname)
 {
-
+	ALuint buf = 0;
+	if (loadedMenuSounds.find(fname) != loadedMenuSounds.end()) {
+		buf = loadedMenuSounds.at(fname);
+	}
+	else {
+		buf = menuSounds.loadAudio(menuSoundPath + fname);
+		if (buf == 0) return;
+		loadedMenuSounds[fname] = buf;
+	}
+	menuSource->play(buf);
 }
 void AudioDriver::playMusic(std::string fname)
 {
-	auto music = menuSounds.loadAudio(fname);
+	/*
+	if (currentMusic != 0) {
+		if (!menuSounds.removeAudio(currentMusic)) {
+		}
+	}
+	*/
+	auto music = menuSounds.loadAudio(musicPath + fname);
+	currentMusic = music;
+	musicSource->play(music);
 }
-
+void AudioDriver::cleanupGameSounds()
+{
+	gameSounds.removeAllAudio();
+	loadedGameSounds.clear();
+}
 
 void AudioDriver::audioUpdate()
 {

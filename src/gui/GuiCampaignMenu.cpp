@@ -129,7 +129,8 @@ bool GuiCampaignMenu::onStart(const SEvent& event)
 	if (event.GUIEvent.EventType != EGET_BUTTON_CLICKED) return true;
 	guiController->callAnimation(scenariohud.launch);
 	stateController->setState(GAME_RUNNING);
-	stateController->changeMusic(assets->getSoundAsset("battleMusic"));
+	audioDriver->playMusic("combat_default.ogg");
+	//stateController->changeMusic(assets->getSoundAsset("battleMusic"));
 	return false;
 }
 
@@ -138,7 +139,8 @@ bool GuiCampaignMenu::onMenu(const SEvent& event)
 	if (event.GUIEvent.EventType != EGET_BUTTON_CLICKED) return true;
 	guiController->setActiveDialog(GUI_MAIN_MENU);
 	stateController->inCampaign = false;
-	stateController->changeMusic(assets->getSoundAsset("menuMusic"));
+	audioDriver->playMusic("main_menu.ogg");
+	//stateController->changeMusic(assets->getSoundAsset("menuMusic"));
 	return false;
 }
 

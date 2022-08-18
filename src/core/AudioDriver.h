@@ -8,18 +8,28 @@
 class AudioDriver
 {
 	public:
-		AudioDriver() : context(nullptr), device(nullptr) {}
-		void init();
+		AudioDriver();
+
 		void audioUpdate();
 
-		void playGameSound(std::string fname);
+		//This plays a sound from the given source in the game and registers the source.
+		void playGameSound(AudioSource source, std::string fname);
+		//Plays a menu sound effect.
 		void playMenuSound(std::string fname);
-		void playMusic(std::string fname); //will halt the current music
+		//Plays music. Will halt any present music.
+		void playMusic(std::string fname);
+		
+		void cleanupGameSounds();
 	private:
-		ALuint currentMusic;
+
+		std::unordered_map<std::string, ALuint> loadedGameSounds;
+		std::unordered_map<std::string, ALuint> loadedMenuSounds;
 		AudioBuffer gameSounds;
 		AudioBuffer menuSounds;
-		AudioSource musicSource; //should always be on top of the listener
+		ALuint currentMusic;
+
+		AudioSource* musicSource; //should always be on top of the listener
+		AudioSource* menuSource; //ditto - plays menu noises
 		ALCcontext* context;
 		ALCdevice* device;
 };

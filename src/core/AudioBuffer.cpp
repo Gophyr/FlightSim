@@ -17,13 +17,13 @@ ALuint loadOgg(const char* path)
 	fp = fopen(path, "rb");
 	if (!fp) {
 		std::cerr << "Could not open file: " << path << std::endl;
-		goto fail;
+		return 0;
 	}
 	alGenBuffers(1, &sound);
 	error = alGetError();
 	if (error != AL_NO_ERROR) {
-		std::cerr << "Error creating buffer: " << path << std::endl;
-		goto fail;
+		std::cerr << "Error creating buffer: " << path << ", buffer=" << sound << ", error=" << error << std::endl;
+		return 0;
 	}
 
 	if (ov_open_callbacks(fp, &vf, NULL, 0, OV_CALLBACKS_NOCLOSE) < 0) {
@@ -65,35 +65,47 @@ fail:
 	ov_clear(&vf);
 	free(pcmout);
 	return 0;
+
+
 }
 
 ALuint AudioBuffer::loadAudio(std::string fname)
 {
+	if (buffers.find(fname) != buffers.end()) return buffers[fname];
+
 	ALuint sound = loadOgg(fname.c_str());
 	if (sound == 0) {
 		std::cerr << "Error loading on " << fname << "!\n";
 		return sound;
 	}
 	std::cout << "Loaded " << fname << std::endl;
-	buffers.push_back(sound);
+	buffers[fname] = sound;
 	return sound;
 }
 bool AudioBuffer::removeAudio(const ALuint& buf)
 {
-	auto it = buffers.begin();
-	while (it != buffers.end()) {
-		if (*it == buf) {
-			alDeleteBuffers(1, &*it);
-			it = buffers.erase(it);
-			return true;
+	std::string key = "";
+	for (auto [str, val] : buffers) {
+		if (val == buf) {
+			alGetError();
+			alDeleteBuffers(1, &val);
+			auto err = alGetError();
+			if (err != AL_NO_ERROR) {
+				std::cerr << "Something went wrong on removing a buffer - error=" << err << std::endl;
+			}
 		}
-		++it;
+		key = str;
+		break;
 	}
-	return false;
+	if (key == "") return false;
+
+	buffers.erase(key);
+	return true;
 }
 void AudioBuffer::removeAllAudio()
 {
-	for (auto buf : buffers) {
-		alDeleteBuffers(1, &buf);
+	for (auto [key, val] : buffers) {
+		alDeleteBuffers(1, &val);
 	}
+	buffers.clear();
 }

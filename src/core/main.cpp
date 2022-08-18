@@ -45,8 +45,6 @@ int main()
 	smgr = device->getSceneManager();
 	guienv = device->getGUIEnvironment();
 
-	audioDriver->init();
-
 	stateController = new GameStateController(config);
 	stateController->videoConfig = config;
 	stateController->init();

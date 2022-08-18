@@ -10,6 +10,7 @@
 #include "GameAssets.h"
 #include "Campaign.h"
 #include "Dialogue.h"
+#include "AudioDriver.h"
 #include <filesystem>
 
 /*

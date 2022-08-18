@@ -24,6 +24,11 @@ using namespace gui;
 
 #include <al.h>
 #include <alc.h>
+
+#include <efx.h>
+#include <EFX-Util.h>
+#include <efx-creative.h>
+
 #include <ogg.h>
 #include <vorbisfile.h>
 #include <vorbisenc.h>

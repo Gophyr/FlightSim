@@ -24,7 +24,8 @@ void GameStateController::init()
 
 	assets->setFilenames();
 
-	changeMusic(assets->getSoundAsset("menuMusic"));
+	//changeMusic(assets->getSoundAsset("menuMusic"));
+	audioDriver->playMusic("main_menu.ogg");
 
 	gameController = new GameController;
 
@@ -42,8 +43,8 @@ void GameStateController::init()
 	guienv->getSkin()->setColor(EGDC_BUTTON_TEXT, SColor(255, 140, 250, 255));
 
 	//testing out XML reader...
-	DialogueTree testTree("dialogue/testdialogue.xml");
-	testTree.print();
+	//DialogueTree testTree("dialogue/testdialogue.xml");
+	//testTree.print();
 
 	std::cout << "Game initialized!\n";
 	gameInitialized = true;
@@ -236,6 +237,7 @@ void GameStateController::mainLoop()
 {
 	u32 lastFPS = -1;
 	while (device->run()) {
+		audioDriver->audioUpdate();
 		if (stateChangeCalled) {
 			stateChange(); //Updates state if the change has been called by one of the controllers
 		}

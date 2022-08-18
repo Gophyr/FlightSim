@@ -83,7 +83,8 @@ bool GuiMainMenu::onStart(const SEvent& event)
 	else {
 		campaign->newCampaign();
 		guiController->setActiveDialog(GUI_CAMPAIGN_MENU);
-		stateController->changeMusic(assets->getSoundAsset("campaignMusic"));
+		//stateController->changeMusic(assets->getSoundAsset("campaignMusic"));
+		audioDriver->playMusic("campaign_debris.ogg");
 	}
 	return false;
 
