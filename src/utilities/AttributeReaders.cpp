@@ -188,7 +188,8 @@ u32 loadWeaponData(std::string path, gvReader& in)
 		delete data;
 		data = new BolasData;
 	}
-	data->weaponFireSound = "audio/" + in.getString("sound");
+	data->weaponComponent.fireSound = in.getString("fireSound");
+	data->weaponComponent.impactSound = in.getString("impactSound");
 
 	data->id = id;
 	data->name = name;
@@ -244,6 +245,7 @@ u32 loadWeaponData(std::string path, gvReader& in)
 		cmp.currentTimeToHit = 0.f;
 		cmp.force = in.getFloat("force");
 		BolasData* bdat = (BolasData*)data;
+		cmp.latchSound = in.getString("latchSound");
 		bdat->bolasComponent = cmp;
 
 	}
@@ -414,8 +416,8 @@ bool loadWeapon(u32 id, flecs::entity weaponEntity, bool phys)
 	irr.node->setName(idToStr(weaponEntity).c_str());
 	irr.node->setID(ID_IsNotSelectable);
 
-	if(data->weaponComponent.phys) assets->setPhysWeaponFireSound(id, soundEngine->getSoundSource(data->weaponFireSound.c_str()));
-	else assets->setWeaponFireSound(id, soundEngine->getSoundSource(data->weaponFireSound.c_str()));
+	//if(data->weaponComponent.phys) assets->setPhysWeaponFireSound(id, soundEngine->getSoundSource(data->weaponFireSound.c_str()));
+	//else assets->setWeaponFireSound(id, soundEngine->getSoundSource(data->weaponFireSound.c_str()));
 
 	WeaponInfoComponent wep = data->weaponComponent;
 

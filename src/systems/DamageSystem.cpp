@@ -17,13 +17,13 @@ void handleShieldedInstance(flecs::entity id, DamageInstance& inst, HealthCompon
 		if (shield->shields <= 0) shieldsDown = true;
 		shield->shields -= inst.amount;
 		if (shield->shields <= 0) {
-			if(!shieldsDown) gameController->registerSoundInstance(id, assets->getSoundAsset("shieldDown"), 1.f, 50.f);
+			if (!shieldsDown) audioDriver->playGameSound(id, "shield_down.ogg");
 			overflow += -shield->shields;
 			shield->shields = 0;
 		}
 		else {
-			if (inst.amount > 10.f) gameController->registerSoundInstance(id, assets->getSoundAsset("shieldHitMajor"), 1.f, 25.f);
-			else gameController->registerSoundInstance(id, assets->getSoundAsset("shieldHitMinor"), 1.f, 25.f);
+			if (inst.amount > 10.f) audioDriver->playGameSound(id, "shield_impact_major.ogg");
+			else audioDriver->playGameSound(id, "shield_impact_minor.ogg");
 		}
 		shield->timeSinceLastHit = 0;
 	}
@@ -59,7 +59,7 @@ void damageSystem(flecs::iter it, DamageTrackingComponent* dtc, HealthComponent*
 				handleShieldedInstance(id, inst, hp, shld);
 				break;
 			case DAMAGE_TYPE::IMPACT:
-				if (inst.time >= dmg->lastDamageTime + 500) gameController->registerSoundInstance(id, assets->getSoundAsset("impactSound"), 1.f, 50.f);
+				if (inst.time >= dmg->lastDamageTime + 500) audioDriver->playGameSound(id, "impact_1.ogg");
 				handleInstance(inst, hp);
 				break;
 			case DAMAGE_TYPE::VELOCITY:

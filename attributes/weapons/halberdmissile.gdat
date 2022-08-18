@@ -1,7 +1,9 @@
 model=basicmissile/MissileLauncher.obj
 texture=basicmissile/MissileLauncher.png
 particle=smokejet.png
-sound=laser_shoot.ogg
+
+fireSound=weapon_fire_kinetic.ogg
+impactSound=weapon_hit_kinetic.ogg
 
 missilemodel=basicmissile/Missile.obj
 missiletexture=basicmissile/Missile.png

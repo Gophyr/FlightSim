@@ -56,12 +56,10 @@ class GameStateController : public IEventReceiver
 
 		bool inCampaign;
 		void backToCampaign();
-		void changeMusic(ISoundSource* newSource);
 #if _DEBUG
 		void addDebugLine(line3df line) { debugLines.push_back(line); }
 #endif 
 	private:
-		ISound* currentMusic;
 		f32 musicVolume = .3f; //change this later to be adjustable
 		f32 musicTimer;
 		void stateChange();

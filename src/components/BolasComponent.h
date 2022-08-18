@@ -13,6 +13,7 @@ struct BolasInfoComponent
 	f32 currentTimeToHit;
 	f32 force;
 	btTypedConstraint* constraint;
+	std::string latchSound;
 };
 
 #endif 

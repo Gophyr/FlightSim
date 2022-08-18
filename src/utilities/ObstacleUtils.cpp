@@ -86,5 +86,5 @@ void deathExplosion(flecs::entity id)
 	f32 avgscale = (scale.X + scale.Y + scale.Z);
 	f32 rad = irr->node->getBoundingBox().getExtent().getLength() * avgscale;
 	auto explosion = explode(pos, 3.f, avgscale, rad, 90.f, 1200.f);
-	gameController->registerSoundInstance(explosion, assets->getSoundAsset("physicsBlastSound"), 1.f, 200.f);
+	audioDriver->playGameSound(explosion, "death_explosion_fighter.ogg");
 }

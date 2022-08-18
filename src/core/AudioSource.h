@@ -18,6 +18,7 @@ class AudioSource
 		void setGain(const f32 gain);
 		void setLoop(const bool loop);
 
+		bool isFinished();
 	private:
 		f32 m_pitch = 1.f;
 		f32 m_gain = 1.f;

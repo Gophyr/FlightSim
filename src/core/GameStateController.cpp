@@ -20,8 +20,6 @@ void GameStateController::init()
 	driver->setTextureCreationFlag(ETCF_ALWAYS_32_BIT, true);
 
 	loadShipAndWeaponData();
-	soundEngine = createIrrKlangDevice();
-
 	assets->setFilenames();
 
 	audioDriver->playMusic("main_menu.ogg");
@@ -181,22 +179,10 @@ void GameStateController::setState(GAME_STATE newState)
 
 void GameStateController::backToCampaign()
 {
+	audioDriver->cleanupGameSounds();
 	campaign->getSector()->finishScenario();
 	returningToCampaign = true;
 	setState(GAME_MENUS);
-}
-
-void GameStateController::changeMusic(ISoundSource* newSource)
-{
-	if (currentMusic) {
-		currentMusic->stop();
-		currentMusic->drop(); //and roll!
-	}
-	currentMusic = soundEngine->play2D(newSource, true, true, true);
-	if (currentMusic) {
-		currentMusic->setVolume(musicVolume);
-		currentMusic->setIsPaused(false);
-	}
 }
 
 void GameStateController::stateChange() //Messy handler for the different states; since there aren't many it's just an if chain
@@ -236,7 +222,7 @@ void GameStateController::mainLoop()
 {
 	u32 lastFPS = -1;
 	while (device->run()) {
-		audioDriver->audioUpdate();
+		//audioDriver->audioUpdate();
 		if (stateChangeCalled) {
 			stateChange(); //Updates state if the change has been called by one of the controllers
 		}

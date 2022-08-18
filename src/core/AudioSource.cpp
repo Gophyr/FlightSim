@@ -2,6 +2,7 @@
 
 AudioSource::AudioSource()
 {
+	alGetError();
 	alGenSources(1, &source);
 	alSourcef(source, AL_PITCH, m_pitch);
 	alSourcef(source, AL_GAIN, m_gain);
@@ -12,13 +13,17 @@ AudioSource::AudioSource()
 }
 AudioSource::~AudioSource()
 {
-	alDeleteSources(1, &source);
+	alGetError();
+	alSourcei(source, AL_BUFFER, 0); //detach the buffer, if it exists
+	alDeleteSources(1, &source); //get rid of the source
 }
 void AudioSource::play(const ALuint bufToPlay)
 {
 	if (buf != 0) stop();
 
 	buf = bufToPlay;
+
+	alGetError();
 	alSourcei(source, AL_BUFFER, buf);
 	alSourcef(source, AL_PITCH, m_pitch);
 	alSourcef(source, AL_GAIN, m_gain);
@@ -32,6 +37,7 @@ void AudioSource::play(const ALuint bufToPlay)
 void AudioSource::stop()
 {
 	buf = 0;
+	alGetError();
 	alSourceStop(source);
 	alSourcei(source, AL_BUFFER, 0);
 }
@@ -63,4 +69,16 @@ void AudioSource::setLoop(const bool loop)
 {
 	m_loop = loop;
 	alSourcei(source, AL_LOOPING, m_loop);
+}
+
+bool AudioSource::isFinished()
+{
+	if (buf == 0) return true;
+
+	alGetError();
+	ALint state;
+	alGetSourcei(source, AL_SOURCE_STATE, &state);
+	if (state == AL_STOPPED) return true;
+
+	return false;
 }

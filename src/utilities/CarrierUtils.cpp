@@ -55,19 +55,7 @@ flecs::entity createHumanCarrier(u32 carrId, vector3df pos, vector3df rot)
 	initializeShipCollisionBody(carrier, carrId, true);
 	initializeHealth(carrier, carr->health);
 	carrier.set<CarrierComponent>(carr->carrierComponent);
-	//initializeCarrier(carrier, carr->carrierComponent.spawnRate, carr->carrierComponent.reserveShips, carr->carrierComponent.scale);
 
-	/*
-	ShipInstance* inst = campaign->createNewShipInstance(true);
-	for (u32 i = 0; i < inst->hards.hardpointCount; ++i) {
-		inst->weps[i] = stateController->weaponData[3]->weaponComponent;
-	}
-
-	auto carrcmp = carrier.get_mut<CarrierComponent>();
-	carrcmp->shipTypeCount = 1;
-	carrcmp->spawnShipTypes[0] = *inst;
-	delete inst;
-	*/
 	initializePlayerFaction(carrier);
 	initializeDefaultSensors(carrier);
 	initializeDefaultAI(carrier);
@@ -150,5 +138,5 @@ void carrierDeathExplosionCallback(flecs::entity id)
 	f32 avgscale = (scale.X + scale.Y + scale.Z);
 	f32 rad = irr->node->getBoundingBox().getExtent().getLength() * 3 * avgscale;
 	auto explosion = explode(pos, 3.f, avgscale, rad, 60.f, 600.f);
-	gameController->registerSoundInstance(explosion, assets->getSoundAsset("carrierDeathExplosionSound"), 1.f, 100.f);
+	audioDriver->playGameSound(explosion, "death_explosion_carrier.ogg");
 }

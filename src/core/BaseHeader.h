@@ -19,7 +19,6 @@ using namespace gui;
 #include <BulletCollision/CollisionShapes/btShapeHull.h>
 #include <BulletCollision/CollisionDispatch/btGhostObject.h>
 #include <Serialize/BulletWorldImporter/btBulletWorldImporter.h>
-#include <irrKlang.h>
 #include <flecs.h>
 
 #include <al.h>
@@ -33,8 +32,6 @@ using namespace gui;
 #include <vorbisfile.h>
 #include <vorbisenc.h>
 
-using namespace irrklang;
-
 #ifdef _MSC_VER
 #pragma comment(lib, "Irrlicht.lib")
 
@@ -45,7 +42,6 @@ using namespace irrklang;
 #pragma comment(lib, "BulletWorldImporter_Debug.lib")
 #pragma comment(lib, "BulletFileLoader_Debug.lib")
 
-#pragma comment(lib, "irrKlang.lib")
 #else 
 #pragma comment(lib, "BulletDynamics.lib")
 #pragma comment(lib, "BulletCollision.lib")
@@ -54,13 +50,12 @@ using namespace irrklang;
 #pragma comment(lib, "BulletFileLoader.lib")
 #endif 
 
-#pragma comment(lib, "irrKlang.lib")
-
 #pragma comment(lib, "OpenAL32.lib")
 #pragma comment(lib, "EFX-Util.lib")
 #pragma comment(lib, "libogg_static.lib")
 #pragma comment(lib, "libvorbis_static.lib")
 #pragma comment(lib, "libvorbisfile_static.lib")
+
 #endif
 
 #include <unordered_map>
@@ -88,7 +83,6 @@ extern IrrlichtDevice* device;
 extern IVideoDriver* driver;
 extern ISceneManager* smgr;
 extern IGUIEnvironment* guienv;
-extern ISoundEngine* soundEngine;
 extern BulletPhysicsWorld* bWorld;
 extern flecs::world* game_world;
 

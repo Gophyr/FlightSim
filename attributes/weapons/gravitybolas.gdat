@@ -1,7 +1,10 @@
 model=impulseblaster/gravgun.obj
 texture=impulseblaster/gravguntex.png
 particle=particlewhite.bmp
-sound=bolas_shoot.ogg
+
+fireSound=weapon_fire_bolas.ogg
+impactSound=weapon_impact_bolas.ogg
+latchSound=weapon_latch_bolas.ogg
 
 id=2
 phys=1

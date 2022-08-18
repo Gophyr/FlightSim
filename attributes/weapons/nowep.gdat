@@ -1,7 +1,8 @@
 model=none 
 texture=none
 particle=particlered.bmp
-sound=laser_shoot.ogg
+fireSound=weapon_fire_kinetic.ogg
+impactSound=weapon_hit_kinetic.ogg
 
 id=0
 phys=0

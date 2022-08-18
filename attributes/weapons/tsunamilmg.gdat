@@ -2,7 +2,8 @@ model=machinegun/gun.obj
 texture=machinegun/guntexture.png
 norm=machinegun/gunnorm.png
 particle=bullet.bmp
-sound=kinetic_a.ogg
+fireSound=weapon_fire_kinetic.ogg
+impactSound=weapon_hit_kinetic.ogg
 
 id=3
 phys=0

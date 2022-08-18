@@ -2,7 +2,8 @@ model=machinegun/gun.obj
 texture=machinegun/guntexture.png
 norm=machinegun/gunnorm.png
 particle=particlered.bmp
-sound=laser.ogg
+fireSound=weapon_fire_plasma.ogg
+impactSound=weapon_hit_plasma.ogg
 
 id=1
 phys=0

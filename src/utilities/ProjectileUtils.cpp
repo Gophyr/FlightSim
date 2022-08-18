@@ -51,8 +51,7 @@ flecs::entity createProjectileEntity(vector3df spawnPos, vector3df direction, fl
 
 	u32 id = wepInfo->wepDataId;
 
-	if(wepInfo->phys) gameController->registerSoundInstance(weaponId, assets->getPhysWeaponFireSound(id), .7f, 10.f);
-	else gameController->registerSoundInstance(weaponId, assets->getWeaponFireSound(id), .7f, 10.f);
+	audioDriver->playGameSound(weaponId, wepInfo->fireSound);
 
 	if (projectileInfo.type == WEP_PLASMA) {
 		initialForce += irrVecToBt(initialDir) * projectileInfo.speed;
@@ -352,6 +351,7 @@ ProjectileInfoComponent addProjectileInfo(const WeaponInfoComponent* wepInfo, ve
 	projectileInfo.lifetime = wepInfo->lifetime;
 	projectileInfo.currentLifetime = 0.f;
 	projectileInfo.damage = wepInfo->damage;
+	projectileInfo.impactSound = wepInfo->impactSound;
 
 	return projectileInfo;
 }

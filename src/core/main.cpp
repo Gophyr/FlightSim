@@ -12,7 +12,6 @@ IrrlichtDevice* device = 0;
 IVideoDriver* driver = 0;
 ISceneManager* smgr = 0;
 IGUIEnvironment* guienv = 0;
-ISoundEngine* soundEngine = 0;
 BulletPhysicsWorld* bWorld = 0;
 flecs::world* game_world = 0;
 

@@ -41,15 +41,6 @@ ITexture* Assets::getHUDAsset(std::string name)
 	return HUDAssets[name];
 }
 
-ISoundSource* Assets::getSoundAsset(std::string name)
-{
-	if (soundAssets[name]) {
-		return soundAssets[name];
-	}
-	soundAssets[name] = soundEngine->getSoundSource(fileLocations[name].c_str());
-	return soundAssets[name];
-}
-
 btConvexHullShape Assets::getHullAsset(std::string name) 
 {
 	if (hullAssets.find(name) != hullAssets.end()) {
@@ -87,63 +78,6 @@ IGUIFont* Assets::getFontAsset(std::string name)
 	return fontAssets[name];
 }
 
-ISoundSource* Assets::getWepFireSound(u32 id, bool phys)
-{
-	if (phys) return physWeaponFireSounds[id];
-	return weaponFireSounds[id];
-}
-bool Assets::setWepFireSound(u32 id, ISoundSource* sound, bool phys)
-{
-	if (phys) physWeaponFireSounds[id] = sound;
-	else weaponFireSounds[id] = sound;
-	return true;
-}
-ISoundSource* Assets::getWepHitSound(u32 id, bool phys)
-{
-	if (phys) return physWeaponImpactSounds[id];
-	return weaponFireSounds[id];
-}
-bool Assets::setWepHitSound(u32 id, ISoundSource * sound, bool phys)
-{
-	if (phys) physWeaponImpactSounds[id] = sound;
-	else weaponImpactSounds[id] = sound;
-	return true;
-}
-bool Assets::setWeaponFireSound(u32 id, ISoundSource* sound)
-{
-	return setWepFireSound(id, sound);
-}
-bool Assets::setWeaponImpactSound(u32 id, ISoundSource* sound)
-{
-	return setWepHitSound(id, sound);
-}
-
-ISoundSource* Assets::getWeaponFireSound(u32 id)
-{
-	return getWepFireSound(id);
-}
-ISoundSource* Assets::getWeaponImpactSound(u32 id)
-{
-	return getWepHitSound(id);
-}
-
-bool Assets::setPhysWeaponFireSound(u32 id, ISoundSource* sound)
-{
-	return setWepFireSound(id, sound, true);
-}
-bool Assets::setPhysWeaponImpactSound(u32 id, ISoundSource* sound)
-{
-	return setWepHitSound(id, sound, true);
-}
-ISoundSource* Assets::getPhysWeaponFireSound(u32 id)
-{
-	return getWepFireSound(id, true);
-}
-ISoundSource* Assets::getPhysWeaponImpactSound(u32 id)
-{
-	return getWepHitSound(id, true);
-}
-
 void Assets::clearLoadedGameAssets() 
 {
 	for (auto [name, mesh] : meshAssets) {
@@ -159,7 +93,6 @@ void Assets::clearLoadedGameAssets()
 	HUDAssets.clear();
 	textureAssets.clear();
 	hullAssets.clear();
-	soundAssets.clear();
 }
 
 void Assets::setFilenames() 

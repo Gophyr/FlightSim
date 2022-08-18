@@ -158,7 +158,6 @@ void GameController::close()
 	delete game_world;
 
 	//todo: need to clean out the ECS
-	sounds.clear();
 	assets->clearLoadedGameAssets();
 	open = false;
 }

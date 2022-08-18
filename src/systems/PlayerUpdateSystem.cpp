@@ -37,8 +37,6 @@ void playerUpdateSystem(flecs::iter it, IrrlichtComponent* irrc, PlayerComponent
 		//HUD work and updates
 		hudUpdate(player, entity);
 
-		//updates the listener position for sound
-		soundEngine->setListenerPosition(player->camera->getAbsolutePosition(), getNodeForward(player->camera), vec3df(0, 0, 0), getNodeUp(player->camera));
 	}
 }
 

@@ -1,5 +1,7 @@
 #include "AudioDriver.h"
 #include <iostream>
+#include "IrrlichtComponent.h"
+#include "BulletRigidBodyComponent.h"
 
 const std::string musicPath = "audio/music/";
 const std::string menuSoundPath = "audio/menu/";
@@ -26,7 +28,7 @@ AudioDriver::AudioDriver()
 	musicSource->setLoop(true);
 }
 
-void AudioDriver::playGameSound(AudioSource source, std::string fname)
+void AudioDriver::playGameSound(flecs::entity ent, std::string fname)
 {
 	ALuint buf = 0;
 	if (loadedGameSounds.find(fname) != loadedGameSounds.end()) {
@@ -36,9 +38,21 @@ void AudioDriver::playGameSound(AudioSource source, std::string fname)
 		if (buf == 0) return;
 		loadedGameSounds[fname] = buf;
 	}
-	//also needs to register the audio source...
-	source.play(buf);
+	//also needs to register the audio source
+	_SoundInstance inst;
+	inst.id = ent;
+	auto irr = ent.get<IrrlichtComponent>();
+	auto rbc = ent.get<BulletRigidBodyComponent>();
+	if (irr) {
+		inst.src.setPos(irr->node->getAbsolutePosition());
+	}
+	if (rbc) {
+		inst.src.setVel(rbc->rigidBody->getLinearVelocity());
+	}
+	inst.src.play(buf);
+	curGameSounds.push_back(inst);
 }
+
 void AudioDriver::playMenuSound(std::string fname)
 {
 	ALuint buf = 0;
@@ -65,10 +79,24 @@ void AudioDriver::playMusic(std::string fname)
 }
 void AudioDriver::cleanupGameSounds()
 {
+	setListenerPosition(vector3df(0, 0, 0));
+
+	for (auto inst : curGameSounds) {
+		inst.src.stop();
+	}
+	curGameSounds.clear();
+
 	gameSounds.removeAllAudio();
 	loadedGameSounds.clear();
 }
 
-void AudioDriver::audioUpdate()
+void AudioDriver::setListenerPosition(vector3df pos, btVector3 vel)
 {
+	alGetError();
+	alListener3f(AL_POSITION, pos.X, pos.Y, pos.Z);
+	alListener3f(AL_VELOCITY, vel.x(), vel.y(), vel.z());
+	musicSource->setPos(pos);
+	musicSource->setVel(vel);
+	menuSource->setPos(pos);
+	menuSource->setVel(vel);
 }
