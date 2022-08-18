@@ -43,7 +43,6 @@ bool GuiDeathMenu::onReturnCampaign(const SEvent& event)
 	if (event.GUIEvent.EventType != EGET_BUTTON_CLICKED || !gameController->isPlayerAlive) return true;
 	stateController->backToCampaign();
 	audioDriver->playMusic("campaign_debris.ogg");
-	//stateController->changeMusic(assets->getSoundAsset("campaignMusic"));
 	return false;
 }
 
@@ -53,6 +52,5 @@ bool GuiDeathMenu::onReturnMenu(const SEvent& event)
 
 	stateController->setState(GAME_MENUS);
 	audioDriver->playMusic("main_menu.ogg");
-	//stateController->changeMusic(assets->getSoundAsset("menuMusic"));
 	return false;
 }

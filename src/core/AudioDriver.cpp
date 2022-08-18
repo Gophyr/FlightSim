@@ -54,12 +54,11 @@ void AudioDriver::playMenuSound(std::string fname)
 }
 void AudioDriver::playMusic(std::string fname)
 {
-	/*
 	if (currentMusic != 0) {
-		if (!menuSounds.removeAudio(currentMusic)) {
-		}
+		musicSource->stop();
+		menuSounds.removeAudio(currentMusic);
 	}
-	*/
+
 	auto music = menuSounds.loadAudio(musicPath + fname);
 	currentMusic = music;
 	musicSource->play(music);

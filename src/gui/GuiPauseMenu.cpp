@@ -44,6 +44,5 @@ bool GuiPauseMenu::onExit(const SEvent& event)
 
 	stateController->setState(GAME_MENUS);
 	audioDriver->playMusic("main_menu.ogg");
-	//stateController->changeMusic(assets->getSoundAsset("menuMusic"));
 	return false;
 }

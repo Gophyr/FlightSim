@@ -24,7 +24,6 @@ void GameStateController::init()
 
 	assets->setFilenames();
 
-	//changeMusic(assets->getSoundAsset("menuMusic"));
 	audioDriver->playMusic("main_menu.ogg");
 
 	gameController = new GameController;
