@@ -11,6 +11,11 @@ AudioSource::AudioSource()
 	alSource3f(source, AL_VELOCITY, m_velocity[0], m_velocity[1], m_velocity[2]);
 	alSourcei(source, AL_LOOPING, m_loop);
 	alSourcei(source, AL_BUFFER, buf);
+
+	alSourcef(source, AL_REFERENCE_DISTANCE, m_maxDist);
+	alSourcef(source, AL_MAX_DISTANCE, m_refDist);
+	//alSourcef(source, AL_ROLLOFF_FACTOR, .5f);
+	alSourcei(source, AL_SOURCE_RELATIVE, false);
 }
 AudioSource::~AudioSource()
 {
@@ -34,8 +39,8 @@ void AudioSource::play(const ALuint bufToPlay)
 	alSource3f(source, AL_VELOCITY, m_velocity[0], m_velocity[1], m_velocity[2]);
 	alSourcei(source, AL_LOOPING, m_loop);
 
-	alSourcef(source, AL_MAX_DISTANCE, 100.f);
-	alSourcef(source, AL_REFERENCE_DISTANCE, 100.f);
+	//alSourcef(source, AL_MAX_DISTANCE, 100.f);
+	//alSourcef(source, AL_REFERENCE_DISTANCE, 100.f);
 
 	err = alGetError();
 	alSourcePlay(source);
@@ -81,6 +86,18 @@ void AudioSource::setLoop(const bool loop)
 {
 	m_loop = loop;
 	alSourcei(source, AL_LOOPING, m_loop);
+}
+
+void AudioSource::setMaxDist(const f32 dist)
+{
+	m_maxDist = dist;
+	alSourcef(source, AL_MAX_DISTANCE, m_maxDist);
+}
+
+void AudioSource::setRefDist(const f32 dist)
+{
+	m_refDist = dist;
+	alSourcef(source, AL_REFERENCE_DISTANCE, m_refDist);
 }
 
 bool AudioSource::isFinished()

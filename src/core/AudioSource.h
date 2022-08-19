@@ -17,10 +17,16 @@ class AudioSource
 		void setPitch(const f32 pitch);
 		void setGain(const f32 gain);
 		void setLoop(const bool loop);
+
+		void setMaxDist(const f32 dist);
+		void setRefDist(const f32 dist);
+
 		bool isFinished();
 	private:
 		f32 m_pitch = 1.f;
-		f32 m_gain = 1.f;
+		f32 m_gain = .7f;
+		f32 m_maxDist = 100.f;
+		f32 m_refDist = 10.f;
 		f32 m_position[3] = { 0,0,0 };
 		f32 m_velocity[3] = { 0,0,0 };
 		f32 m_direction[3] = { 0,0,0 };

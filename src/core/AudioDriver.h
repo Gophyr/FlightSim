@@ -20,11 +20,11 @@ class AudioDriver
 		//Plays music. Will halt any present music.
 		void playMusic(std::string fname);
 		
-		void setListenerPosition(vector3df pos, btVector3 vel = btVector3(0,0,0));
+		void setListenerPosition(vector3df pos, vector3df up = vector3df(0,1,0), btVector3 vel = btVector3(0,0,0));
 		void cleanupGameSounds();
 		struct _SoundInstance {
 			flecs::entity id;
-			AudioSource src;
+			AudioSource* src;
 		};
 		std::list<_SoundInstance> curGameSounds;
 	private:

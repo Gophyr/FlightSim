@@ -21,6 +21,11 @@ AudioDriver::AudioDriver()
 		name = alcGetString(device, ALC_ALL_DEVICES_SPECIFIER);
 	if (!name || alcGetError(device) != AL_NO_ERROR)
 		name = alcGetString(device, ALC_DEVICE_SPECIFIER);
+
+	alDistanceModel(AL_LINEAR_DISTANCE_CLAMPED);
+	alSpeedOfSound(600.f); //This is space. I do what I want.
+	alDopplerFactor(.5f);
+
 	std::cout << "Opened audio device: " << name << std::endl;
 
 	musicSource = new AudioSource;
@@ -41,15 +46,20 @@ void AudioDriver::playGameSound(flecs::entity ent, std::string fname)
 	//also needs to register the audio source
 	_SoundInstance inst;
 	inst.id = ent;
+	inst.src = new AudioSource;
 	auto irr = ent.get<IrrlichtComponent>();
 	auto rbc = ent.get<BulletRigidBodyComponent>();
 	if (irr) {
-		inst.src.setPos(irr->node->getAbsolutePosition());
+		inst.src->setPos(irr->node->getAbsolutePosition());
 	}
 	if (rbc) {
-		inst.src.setVel(rbc->rigidBody->getLinearVelocity());
+		inst.src->setVel(rbc->rigidBody->getLinearVelocity());
 	}
-	inst.src.play(buf);
+	
+	inst.src->setRefDist(10.f);
+	inst.src->setMaxDist(500.f);
+
+	inst.src->play(buf);
 	curGameSounds.push_back(inst);
 }
 
@@ -82,7 +92,8 @@ void AudioDriver::cleanupGameSounds()
 	setListenerPosition(vector3df(0, 0, 0));
 
 	for (auto inst : curGameSounds) {
-		inst.src.stop();
+		inst.src->stop();
+		delete inst.src;
 	}
 	curGameSounds.clear();
 
@@ -90,12 +101,12 @@ void AudioDriver::cleanupGameSounds()
 	loadedGameSounds.clear();
 }
 
-void AudioDriver::setListenerPosition(vector3df pos, btVector3 vel)
+void AudioDriver::setListenerPosition(vector3df pos, vector3df up, btVector3 vel)
 {
 	auto err = alGetError();
-	alListener3f(AL_POSITION, pos.X, pos.Y, pos.Z);
-	alListener3f(AL_VELOCITY, vel.x(), vel.y(), vel.z());
-
+	alListener3f(AL_POSITION, pos.X, pos.Y, -pos.Z);
+	alListener3f(AL_VELOCITY, vel.x(), vel.y(), -vel.z());
+	alListener3f(AL_ORIENTATION, up.X, up.Y, -up.Z);
 	musicSource->setPos(pos);
 	musicSource->setVel(vel);
 	menuSource->setPos(pos);
