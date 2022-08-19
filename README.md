@@ -7,7 +7,7 @@ Libraries being used:
 
 -Irrlicht 1.8.4
 
--irrKlang
+-OpenAL
 
 Includes basic AI with state handling, an Entity-Component-System setup to handle data and some neat systems to handle events. More stuff being added on a daily basis. 
 The current build is technically complete; that is you can boot it up and start shooting people in space. Current work is going to be adding some extra weapons, ships, augmentations, and more. 

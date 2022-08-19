@@ -7,12 +7,6 @@
     <ClCompile Include="src\systems\CollisionCheckingSystem.cpp">
       <Filter>Sources\Systems</Filter>
     </ClCompile>
-    <ClCompile Include="src\systems\ai_systems\DefaultAIBehaviors.cpp">
-      <Filter>Sources\Systems\AI_Systems</Filter>
-    </ClCompile>
-    <ClCompile Include="src\systems\ai_systems\DefaultAIUpdateSystem.cpp">
-      <Filter>Sources\Systems\AI_Systems</Filter>
-    </ClCompile>
     <ClCompile Include="src\core\GameController.cpp">
       <Filter>Sources\Core</Filter>
     </ClCompile>
@@ -106,9 +100,6 @@
     <ClCompile Include="src\utilities\ProjectileUtils.cpp">
       <Filter>Sources\Utilities</Filter>
     </ClCompile>
-    <ClCompile Include="src\gui\GuiLoadoutMenu.cpp">
-      <Filter>Sources\Gui</Filter>
-    </ClCompile>
     <ClCompile Include="src\utilities\btUtils.cpp">
       <Filter>Sources\Utilities</Filter>
     </ClCompile>
@@ -148,14 +139,41 @@
     <ClCompile Include="src\systems\CarrierUpdateSystem.cpp">
       <Filter>Sources\Systems</Filter>
     </ClCompile>
-    <ClCompile Include="src\systems\ObjectiveSystem.cpp">
-      <Filter>Sources\Systems</Filter>
-    </ClCompile>
     <ClCompile Include="src\utilities\WeaponUtils.cpp">
       <Filter>Sources\Utilities</Filter>
     </ClCompile>
     <ClCompile Include="src\core\flecs.c">
       <Filter>Sources\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\systems\ai_systems\AITypes.cpp">
+      <Filter>Sources\Systems\AI_Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="src\gui\GuiWingmanMenu.cpp">
+      <Filter>Sources\Gui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\systems\ThrustSystem.cpp">
+      <Filter>Sources\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="src\core\Campaign.cpp">
+      <Filter>Sources\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\core\Sector.cpp">
+      <Filter>Sources\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\core\Dialogue.cpp">
+      <Filter>Sources\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utilities\DialogueEffects.cpp">
+      <Filter>Sources\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="src\core\AudioDriver.cpp">
+      <Filter>Sources\Core\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="src\core\AudioBuffer.cpp">
+      <Filter>Sources\Core\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="src\core\AudioSource.cpp">
+      <Filter>Sources\Core\Audio</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -167,12 +185,6 @@
     </ClInclude>
     <ClInclude Include="src\systems\CollisionCheckingSystem.h">
       <Filter>Headers\Systems</Filter>
-    </ClInclude>
-    <ClInclude Include="src\systems\ai_systems\DefaultAIBehaviors.h">
-      <Filter>Headers\Systems\AI_Systems</Filter>
-    </ClInclude>
-    <ClInclude Include="src\systems\ai_systems\DefaultAIUpdateSystem.h">
-      <Filter>Headers\Systems\AI_Systems</Filter>
     </ClInclude>
     <ClInclude Include="src\core\GameController.h">
       <Filter>Headers\Core</Filter>
@@ -276,9 +288,6 @@
     <ClInclude Include="src\utilities\LoadoutData.h">
       <Filter>Headers\Core</Filter>
     </ClInclude>
-    <ClInclude Include="src\gui\GuiLoadoutMenu.h">
-      <Filter>Headers\Gui</Filter>
-    </ClInclude>
     <ClInclude Include="src\utilities\btUtils.h">
       <Filter>Headers\Utilities</Filter>
     </ClInclude>
@@ -369,7 +378,7 @@
     <ClInclude Include="src\components\CarrierComponent.h">
       <Filter>Headers\Components\Ship Components</Filter>
     </ClInclude>
-    <ClInclude Include="src\components\TurretComponent.h">
+    <ClInclude Include="src\components\HardpointComponent.h">
       <Filter>Headers\Components\Ship Components</Filter>
     </ClInclude>
     <ClInclude Include="src\fx\Shaders.h">
@@ -390,9 +399,6 @@
     <ClInclude Include="src\components\ObjectiveComponent.h">
       <Filter>Headers\Components\Basic Components</Filter>
     </ClInclude>
-    <ClInclude Include="src\systems\ObjectiveSystem.h">
-      <Filter>Headers\Systems</Filter>
-    </ClInclude>
     <ClInclude Include="src\components\BolasComponent.h">
       <Filter>Headers\Components\Weapon Components</Filter>
     </ClInclude>
@@ -404,6 +410,36 @@
     </ClInclude>
     <ClInclude Include="src\core\SystemsHeader.h">
       <Filter>Headers\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\systems\ai_systems\AITypes.h">
+      <Filter>Headers\Systems\AI_Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="src\gui\GuiWingmanMenu.h">
+      <Filter>Headers\Gui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\components\ThrustComponent.h">
+      <Filter>Headers\Components\Ship Components</Filter>
+    </ClInclude>
+    <ClInclude Include="src\systems\ThrustSystem.h">
+      <Filter>Headers\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="src\core\Sector.h">
+      <Filter>Headers\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\core\Dialogue.h">
+      <Filter>Headers\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\utilities\DialogueEffects.h">
+      <Filter>Headers\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="src\core\AudioDriver.h">
+      <Filter>Headers\Core\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="src\core\AudioBuffer.h">
+      <Filter>Headers\Core\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="src\core\AudioSource.h">
+      <Filter>Headers\Core\Audio</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -475,6 +511,12 @@
     </Filter>
     <Filter Include="Sources\fx">
       <UniqueIdentifier>{ae21f61c-bd53-441a-861f-8221bffae4ff}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headers\Core\Audio">
+      <UniqueIdentifier>{5a4942a3-a094-475e-9d8b-b22d9d3708d9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\Core\Audio">
+      <UniqueIdentifier>{d777d4fd-1027-415d-8236-88e460494ac0}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

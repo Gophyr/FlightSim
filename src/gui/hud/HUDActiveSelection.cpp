@@ -6,14 +6,14 @@
 HUDActiveSelection::HUDActiveSelection(IGUIElement* root) : HUDElement(root)
 {
 	type = HUD_ELEM_TYPE::ACTIVE_SELECTION;
-	selectGUI = guienv->addImage(stateController->assets.getHUDAsset("neutralSelection"), position2di(0, 0), root);
+	selectGUI = guienv->addImage(assets->getHUDAsset("neutralSelection"), position2di(0, 0), root);
 	name = guienv->addStaticText(L"", rect<s32>(position2di(0, 0), dimension2du(128, 128)), false, false, root);
 	name->setOverrideColor(SColor(255, 100, 255, 100));
-	name->setOverrideFont(stateController->assets.getFontAsset("HUDFont"));
+	name->setOverrideFont(assets->getFontAsset("HUDFont"));
 	name->enableOverrideColor(true);
-	crosshair = guienv->addImage(stateController->assets.getHUDAsset("crosshair"), position2di(-200, -200), root);
-	selectHP = guienv->addImage(stateController->assets.getHUDAsset("selectHealth"), position2di(0, 0), root);
-	selectSP = guienv->addImage(stateController->assets.getHUDAsset("selectShields"), position2di(0, 0), root);
+	crosshair = guienv->addImage(assets->getHUDAsset("crosshair"), position2di(-200, -200), root);
+	selectHP = guienv->addImage(assets->getHUDAsset("selectHealth"), position2di(0, 0), root);
+	selectSP = guienv->addImage(assets->getHUDAsset("selectShields"), position2di(0, 0), root);
 	selectGUI->setVisible(false);
 	name->setVisible(false);
 	crosshair->setVisible(false);
@@ -32,11 +32,11 @@ HUDActiveSelection::~HUDActiveSelection()
 
 void HUDActiveSelection::updateElement(flecs::entity playerId)
 {
-	auto player = gameController->playerEntity.get_mut<PlayerComponent>();
-	auto input = gameController->playerEntity.get_mut<InputComponent>();
-	auto playerIrr = gameController->playerEntity.get_mut<IrrlichtComponent>();
-	auto sensors = gameController->playerEntity.get_mut<SensorComponent>();
-	auto rbc = gameController->playerEntity.get_mut<BulletRigidBodyComponent>();
+	auto player = gameController->getPlayer().get_mut<PlayerComponent>();
+	auto input = gameController->getPlayer().get_mut<InputComponent>();
+	auto playerIrr = gameController->getPlayer().get_mut<IrrlichtComponent>();
+	auto sensors = gameController->getPlayer().get_mut<SensorComponent>();
+	auto rbc = gameController->getPlayer().get_mut<BulletRigidBodyComponent>();
 
 	ICameraSceneNode* camera = player->camera;
 
@@ -135,12 +135,12 @@ void HUDActiveSelection::updateElement(flecs::entity playerId)
 	}
 
 	if (!sensors->targetContact.has<BulletRigidBodyComponent>() && !sensors->targetContact.has<BulletGhostComponent>()) return;
-	btVector3 velocity = rbc->rigidBody.getLinearVelocity();
+	btVector3 velocity = rbc->rigidBody->getLinearVelocity();
 	btVector3 forwardTarget;
 	if (sensors->targetContact.has<BulletRigidBodyComponent>()) {
 		auto targetRBC = sensors->targetContact.get<BulletRigidBodyComponent>();
-		forwardTarget = targetRBC->rigidBody.getCenterOfMassPosition() + (targetRBC->rigidBody.getLinearVelocity() * .3f);
-		forwardTarget += (rbc->rigidBody.getLinearVelocity() * -.3f);
+		forwardTarget = targetRBC->rigidBody->getCenterOfMassPosition() + (targetRBC->rigidBody->getLinearVelocity() * .3f);
+		forwardTarget += (rbc->rigidBody->getLinearVelocity() * -.3f);
 	}
 	else if (sensors->targetContact.has<BulletGhostComponent>()) {
 		forwardTarget = irrVecToBt(irr->node->getAbsolutePosition());

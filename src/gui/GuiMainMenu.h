@@ -27,7 +27,6 @@ class GuiMainMenu : public GuiDialog
 		virtual void show();
 
 		bool onStart(const SEvent& event);
-		bool onLoadout(const SEvent& event);
 		bool onSettings(const SEvent& event);
 		bool onQuit(const SEvent& event);
 
@@ -37,7 +36,6 @@ class GuiMainMenu : public GuiDialog
 		f32 showAnimTimer;
 		IGUIImage* screen;
 		IGUIButton* startGame;
-		IGUIButton* loadout;
 		IGUIButton* settings;
 		IGUIButton* quitGame;
 };

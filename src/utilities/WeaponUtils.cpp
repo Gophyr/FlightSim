@@ -5,8 +5,14 @@
 void handleProjectileImpact(flecs::entity projectile, flecs::entity impacted)
 {
 	auto proj = projectile.get<ProjectileInfoComponent>();
-
+	audioDriver->playGameSound(impacted, proj->impactSound);
 	switch (proj->type) {
+	case WEP_PLASMA:
+		plasmaImpact(impacted);
+		break;
+	case WEP_KINETIC:
+		kineticImpact(impacted);
+		break;
 	case WEP_MISSILE:
 		missileImpact(projectile);
 		break;
@@ -26,8 +32,17 @@ void impulseBlasterImpact(flecs::entity projId, flecs::entity impacted)
 	auto proj = projId.get<ProjectileInfoComponent>();
 	auto irr = projId.get<IrrlichtComponent>();
 
-	gameController->registerSoundInstance(impacted, stateController->assets.getSoundAsset("physicsBlastSound"), 1.f, 200.f);
+	//gameController->registerSoundInstance(impacted, assets->getSoundAsset("physicsBlastSound"), 1.f, 200.f);
 	explode(irr->node->getAbsolutePosition(), 1.f, 1.f, 80.f, proj->damage, 500.f);
+}
+
+void plasmaImpact(flecs::entity impacted)
+{
+	//gameController->registerSoundInstance(impacted, assets->getSoundAsset("plasmaImpactSound"), .3f, 25.f);
+}
+void kineticImpact(flecs::entity impacted)
+{
+	//gameController->registerSoundInstance(impacted, assets->getSoundAsset("kineticImpactSound"), .9f, 25.f);
 }
 
 void missileImpact(flecs::entity projId)
@@ -51,7 +66,6 @@ void gravityBolasImpact(flecs::entity projId, flecs::entity impacted)
 	if (!bolasInfo->target1.is_alive()) {
 		bolasInfo->target1 = impacted;
 		std::cout << "Bolas target 1 locked\n";
-		gameController->registerSoundInstance(impacted, stateController->assets.getSoundAsset("bolasHitSound"), .5f, 100.f);
 	}
 	else if (!bolasInfo->target2.is_alive()) {
 		if (bolasInfo->target1 == impacted) return;
@@ -67,13 +81,13 @@ void gravityBolasImpact(flecs::entity projId, flecs::entity impacted)
 		auto rbcA = bolasInfo->target1.get_mut<BulletRigidBodyComponent>();
 		auto rbcB = bolasInfo->target2.get_mut<BulletRigidBodyComponent>();
 
-		gameController->registerSoundInstance(impacted, stateController->assets.getSoundAsset("bolasLatchSound"), 1.f, 100.f);
+		audioDriver->playGameSound(impacted, bolasInfo->latchSound);
 
 		btTransform tr;
 		btVector3 ori(0, 0, 0);
 		tr.setIdentity();
 		tr.setOrigin(ori);
-		auto p2p = new btGeneric6DofConstraint(rbcA->rigidBody, rbcB->rigidBody, tr, tr, false);
+		auto p2p = new btGeneric6DofConstraint(*rbcA->rigidBody, *rbcB->rigidBody, tr, tr, false);
 		p2p->setLinearLowerLimit(btVector3(0, 0, 0));
 		p2p->setLinearUpperLimit(btVector3(0, 0, 0));
 		p2p->setAngularLowerLimit(btVector3(-PI, -PI, -PI));

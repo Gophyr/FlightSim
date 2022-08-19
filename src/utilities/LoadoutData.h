@@ -8,6 +8,9 @@
 #include "KineticComponent.h"
 #include "CarrierComponent.h"
 #include "BolasComponent.h"
+#include "AIComponent.h"
+#include "ThrustComponent.h"
+#include "HardpointComponent.h"
 
 /*
 * Contains all data necessary to be able to properly load a ship in the game.
@@ -20,6 +23,8 @@ struct ShipData
 	std::string name;
 	std::string description;
 	ShipComponent shipComponent;
+	ThrustComponent thrustComponent;
+	HardpointComponent hardpointComponent;
 	btConvexHullShape collisionShape;
 
 	std::string shipMesh;
@@ -37,6 +42,19 @@ struct CarrierData : public ShipData
 	f32 health;
 };
 
+struct TurretData
+{
+	u32 id;
+	HardpointComponent hardpointComponent;
+	ThrustComponent thrustComponent;
+
+	std::string name;
+	std::string description;
+
+	std::string mesh;
+	std::string texture;
+	std::string norm;
+};
 /*
 * Contains all baseline data for a given weapon. The u32 id is NOT an entity id.
 * Take note of additional subclasses when loading and constructing new weapon types.
@@ -73,6 +91,19 @@ struct KineticData : public WeaponData
 struct BolasData : public WeaponData
 {
 	BolasInfoComponent bolasComponent;
+};
+
+struct WingmanData
+{
+	u32 id; //0 is the player
+	std::string name;
+	std::string description;
+	AIComponent ai;
+	ShipInstance* assignedShip = nullptr;
+	u32 totalKills = 0;
+	u32 totalInjuries = 0;
+	bool injured = false;
+	bool assigned = false;
 };
 
 /*

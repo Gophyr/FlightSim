@@ -1,7 +1,7 @@
 #include "GameFunctions.h"
 #include "GameController.h"
 #include "GameStateController.h"
-
+#include "AITypes.h"
 #include "IrrlichtUtils.h"
 #include <iostream>
 
@@ -60,27 +60,48 @@ void destroyObject(flecs::entity id)
 {
 	if (!id.is_alive()) return;
 
-	if (id.has<ShipComponent>()) {
-		auto ship = id.get_mut<ShipComponent>();
-		for (unsigned int i = 0; i < ship->hardpointCount; ++i) {
-			destroyObject(ship->weapons[i]);
+	if (id.has<HardpointComponent>()) {
+		auto hards = id.get_mut<HardpointComponent>();
+		for (unsigned int i = 0; i < hards->hardpointCount; ++i) {
+			destroyObject(hards->weapons[i]);
 		}
 	}
-
 	if (id.has<IrrlichtComponent>()) {
 		auto irr = id.get_mut<IrrlichtComponent>();
-		irr->node->removeAll();
-		irr->node->remove();
+		if (irr->node) {
+			irr->node->removeAll();
+			irr->node->remove();
+		}
 	}
 	if (id.has<BulletRigidBodyComponent>()) {
 		auto rbc = id.get_mut<BulletRigidBodyComponent>();
-		bWorld->removeRigidBody(&rbc->rigidBody);
+		bWorld->removeRigidBody(rbc->rigidBody);
+		if (rbc->rigidBody) delete rbc->rigidBody;
+		delete rbc->shape;
 	}
 	if (id.has<BulletGhostComponent>()) {
 		auto ghost = id.get_mut<BulletGhostComponent>();
-		bWorld->removeCollisionObject(&ghost->ghost);
+		bWorld->removeCollisionObject(ghost->ghost);
+		if (ghost->ghost) delete ghost->ghost;
+		delete ghost->shape;
+	}
+	if (id.has<ObjectiveComponent>()) {
+		id.remove<ObjectiveComponent>();
+	}
+	if (id.has<AIComponent>()) {
+		auto ai = id.get_mut<AIComponent>();
+		delete ai->aiControls;
 	}
 
+	if (id.has<CarrierComponent>()) {
+		auto carr = id.get_mut<CarrierComponent>();
+		for (u32 i = 0; i < carr->turretCount; ++i) {
+			if (carr->turretConstraints[i]) {
+				bWorld->removeConstraint(carr->turretConstraints[i]);
+				delete carr->turretConstraints[i];
+			}
+		}
+	}
 	id.destruct();
 }
 
@@ -93,22 +114,35 @@ bool initializeDefaultPlayer(flecs::entity shipId)
 	target->setPosition(shipIrr->node->getPosition());
 	ICameraSceneNode* camera = smgr->addCameraSceneNode(target, vector3df(0, 5, -20), shipIrr->node->getPosition(), ID_IsNotSelectable, true);
 	shipId.add<InputComponent>();
-	auto player = shipId.get_mut<PlayerComponent>();
-	player->camera = camera;
-	player->target = target;
+	InputComponent input;
+	for (u32 i = 0; i < KEY_KEY_CODES_COUNT; ++i) {
+		input.keysDown[i] = false;
+	}
+	input.leftMouseDown = false;
+	input.rightMouseDown = false;
+	input.mouseControlEnabled = false;
+	input.safetyOverride = false;
 
-	player->thrust = vector3df(0, 0, 0);
-	player->rotation = vector3df(0, 0, 0);
-	gameController->playerEntity = shipId;
+	PlayerComponent player;
+	player.camera = camera;
+	player.target = target;
+
+	player.thrust = vector3df(0, 0, 0);
+	player.rotation = vector3df(0, 0, 0);
+	shipId.set<InputComponent>(input);
+	shipId.set<PlayerComponent>(player);
+	gameController->setPlayer(shipId);
 	return true;
 }
 
 void initializeHealth(flecs::entity id, f32 healthpool)
 {
-	auto hp = id.get_mut<HealthComponent>();
-	auto dmg = id.get_mut<DamageTrackingComponent>();
-	hp->health = healthpool;
-	hp->maxHealth = healthpool;
+	HealthComponent hp;
+	DamageTrackingComponent dmg;
+	hp.health = healthpool;
+	hp.maxHealth = healthpool;
+	id.set<HealthComponent>(hp);
+	id.set<DamageTrackingComponent>(dmg);
 }
 void initializeDefaultHealth(flecs::entity objectId)
 {
@@ -134,145 +168,82 @@ bool initializeDefaultHUD(flecs::entity playerId)
 
 void initializeAI(flecs::entity id, AI_TYPE type, f32 reactSpeed, f32 damageTolerance)
 {
-	auto ai = id.get_mut<AIComponent>();
-	ai->AIType = type;
-	ai->reactionSpeed = reactSpeed;
-	ai->damageTolerance = damageTolerance;
-	ai->timeSinceLastStateCheck = 10.f / (f32)(std::rand() % 100); //This is designed to make it so that the AI don't all check at the same time for framerate purposes
-
+	AIComponent ai;
+	ai.type = type;
+	switch (type) {
+	case AI_TYPE_DEFAULT:
+		ai.aiControls = new DefaultShipAI;
+		break;
+	case AI_TYPE_ACE:
+		ai.aiControls = new AceAI;
+		break;
+	default:
+		ai.aiControls = new DefaultShipAI;
+		break;
+	}
+	ai.reactionSpeed = reactSpeed;
+	ai.cowardice = damageTolerance;
+	ai.timeSinceLastStateCheck = 10.f / (f32)(std::rand() % 100); //This is designed to make it so that the AI don't all check at the same time for framerate purposes
+	id.set<AIComponent>(ai);
 }
 
 void initializeDefaultAI(flecs::entity id)
 {
-	initializeAI(id, AI_TYPE_DEFAULT, AI_DEFAULT_REACTION_TIME, AI_DEFAULT_DAMAGE_TOLERANCE);
+	initializeAI(id, AI_TYPE_DEFAULT, AI_DEFAULT_REACTION_TIME, AI_DEFAULT_COWARDICE);
+}
+
+void initializeAceAI(flecs::entity id)
+{
+	initializeAI(id, AI_TYPE_ACE, .5f, .05f);
 }
 
 flecs::entity explode(vector3df position, f32 duration, f32 scale, f32 radius, f32 damage, f32 force)
 {
 	flecs::entity id = game_world->entity();
-	auto exp = id.get_mut<ExplosionComponent>();
-	exp->duration = duration;
-	exp->lifetime = 0;
-	exp->explosion = smgr->addParticleSystemSceneNode(true, 0, ID_IsNotSelectable, position);
+	ExplosionComponent exp;
+	exp.duration = duration;
+	exp.lifetime = 0;
+	exp.explosion = smgr->addParticleSystemSceneNode(true, 0, ID_IsNotSelectable, position);
 	f32 scalefac = scale;
-	auto em = exp->explosion->createPointEmitter(vector3df(0.04f * scalefac, 0.f, 0.f), 200, 500, SColor(0, 255, 255, 255), SColor(0, 255, 255, 255),
+	auto em = exp.explosion->createPointEmitter(vector3df(0.04f * scalefac, 0.f, 0.f), 200, 500, SColor(0, 255, 255, 255), SColor(0, 255, 255, 255),
 		50, 1000, 360, dimension2df(1.f, 1.f), dimension2df(5.f * scalefac, 5.f * scalefac));
 
-	exp->explosion->setEmitter(em);
+	exp.explosion->setEmitter(em);
 	em->drop();
-	IParticleAffector* paf = exp->explosion->createFadeOutParticleAffector(SColor(0,0,0,0),100);
-	exp->explosion->addAffector(paf);
+	IParticleAffector* paf = exp.explosion->createFadeOutParticleAffector(SColor(0,0,0,0),100);
+	exp.explosion->addAffector(paf);
 	paf->drop();
-	exp->explosion->setMaterialFlag(EMF_LIGHTING, false);
-	exp->explosion->setMaterialFlag(EMF_ZWRITE_ENABLE, false);
-	exp->explosion->setMaterialTexture(0, stateController->assets.getTextureAsset("defaultExplosion"));
-	exp->explosion->setMaterialType(EMT_TRANSPARENT_ADD_COLOR);
+	exp.explosion->setMaterialFlag(EMF_LIGHTING, false);
+	exp.explosion->setMaterialFlag(EMF_ZWRITE_ENABLE, false);
+	exp.explosion->setMaterialTexture(0, assets->getTextureAsset("defaultExplosion"));
+	exp.explosion->setMaterialType(EMT_TRANSPARENT_ADD_COLOR);
 
-	exp->light = smgr->addLightSceneNode(0, position, SColorf(1.f, .9f, .1f));
+	exp.light = smgr->addLightSceneNode(0, position, SColorf(1.f, .9f, .1f));
 
-	exp->force = force;
-	exp->damage = damage;
-	exp->radius = radius;
+	exp.force = force;
+	exp.damage = damage;
+	exp.radius = radius;
+	exp.hasExploded = false;
 
+	IrrlichtComponent irr;
+	irr.name = "explosion!";
+	irr.node = smgr->addSphereSceneNode(radius/20, 16, exp.explosion);
+	irr.node->setMaterialType(EMT_TRANSPARENT_ALPHA_CHANNEL);
+	irr.node->setMaterialFlag(EMF_LIGHTING, false);
+
+	array<ITexture*> tex;
+	for (s32 i = 1; i < 11; ++i) {
+		stringc name = "effects/explosion/explode";
+		name += i;
+		name += ".png";
+		ITexture* t = driver->getTexture(name.c_str());
+		if (t)tex.push_back(t);
+	}
+	ISceneNodeAnimator* anim = smgr->createTextureAnimator(tex, 40, false);
+	irr.node->addAnimator(anim);
+	anim->drop();
+
+	id.set<ExplosionComponent>(exp);
+	id.set<IrrlichtComponent>(irr);
 	return id;
-}
-
-ShipInstance getEndScenarioData()
-{
-	ShipInstance inst;
-	auto hp = gameController->playerEntity.get<HealthComponent>();
-	inst.hp = *hp;
-
-	auto ship = gameController->playerEntity.get<ShipComponent>();
-	inst.ship = *ship;
-	for (u32 i = 0; i < ship->hardpointCount; ++i) {
-		if (!ship->weapons[i].is_alive()) { //there's no weapon here
-			inst.weps[i] = stateController->weaponData[0]->weaponComponent; //add the no-weapon component
-			continue;
-		}
-
-		auto wep = ship->weapons[i].get_mut<WeaponInfoComponent>();
-		if (!wep->usesAmmunition) continue;
-
-		if (wep->clip < wep->maxClip) { //if the clip is partially spent just reload the damn thing
-			wep->clip = wep->maxClip;
-			if (wep->ammunition >= wep->maxClip) {
-				wep->ammunition -= wep->maxClip;
-			}
-			else {
-				wep->ammunition = 0; 
-			}
-		}
-		inst.weps[i] = *wep;
-	}
-	if (!ship->physWeapon.is_alive()) {
-		inst.physWep = stateController->physWeaponData[0]->weaponComponent;
-	}
-	else {
-		auto phys = ship->physWeapon.get<WeaponInfoComponent>();
-		inst.physWep = *phys;
-	}
-	//todo: make it so that it would also grab the health / ammo of wingmen
-	return inst;
-}
-
-ShipInstance newShipInstance()
-{
-	ShipInstance ship;
-	ship.ship = stateController->shipData[0]->shipComponent;
-	ship.hp.health = 100.f;
-	ship.hp.maxHealth = 100.f;
-
-	for (u32 i = 0; i < MAX_HARDPOINTS; ++i) {
-		ship.weps[i] = stateController->weaponData[0]->weaponComponent;
-	}
-	ship.physWep = stateController->physWeaponData[0]->weaponComponent;
-
-	return ship;
-}
-
-void initNewCampaign()
-{
-	stateController->campaign = Campaign();
-
-	for (u32 i = 0; i < NUM_SCENARIO_OPTIONS; ++i) {
-		stateController->campaign.possibleScenarios[i] = randomScenario();
-	}
-	stateController->campaign.currentScenario = randomScenario();
-	stateController->campaign.currentScenario.detectionChance = 0;
-
-	ShipInstance defaultShip = newShipInstance();
-
-	defaultShip.ship = stateController->shipData[0]->shipComponent;
-	defaultShip.weps[0] = stateController->weaponData[3]->weaponComponent;
-	defaultShip.weps[1] = stateController->weaponData[3]->weaponComponent;
-	defaultShip.physWep = stateController->physWeaponData[1]->weaponComponent;
-
-	stateController->campaign.playerShip = defaultShip;
-
-	stateController->campaign.availableWeapons.push_back(stateController->weaponData[0]->weaponComponent);
-	stateController->campaign.availablePhysWeapons.push_back(stateController->physWeaponData[0]->weaponComponent);
-	stateController->campaign.availablePhysWeapons.push_back(stateController->physWeaponData[2]->weaponComponent);
-}
-
-ShipInstance randomShipInstance()
-{
-	ShipInstance inst = newShipInstance();
-	u32 id = std::rand() % stateController->shipData.size();
-	inst.ship = stateController->shipData[id]->shipComponent;
-
-	inst.hp.health = (f32)(std::rand() % (u32)(inst.hp.maxHealth));
-
-	return inst;
-}
-WeaponInfoComponent randomWeapon()
-{
-	u32 id = std::rand() % stateController->weaponData.size();
-	if (id == 0) id += 1;
-	WeaponInfoComponent wep = stateController->weaponData[id]->weaponComponent;
-	if (wep.usesAmmunition) {
-		u32 clips = wep.maxAmmunition / wep.maxClip;
-		wep.ammunition = wep.maxClip * (std::rand() % clips);
-	}
-	return wep;
 }

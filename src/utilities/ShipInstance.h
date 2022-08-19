@@ -5,6 +5,15 @@
 #include "ShipComponent.h"
 #include "WeaponInfoComponent.h"
 #include "HealthComponent.h"
+#include "HardpointComponent.h"
+
+struct WingmanData;
+
+struct WeaponInstance
+{
+	u32 id;
+	WeaponInfoComponent wep;
+};
 
 /*
 * This "instance" effectively tracks a given instance of a ship - its fuel, its ammunition, its health, et cetera - so that it can persist between
@@ -13,10 +22,13 @@
 */
 struct ShipInstance
 {
+	u32 id; //unique ID for this particular ship instance, assigned by the campaign
 	ShipComponent ship;
+	HardpointComponent hards;
 	HealthComponent hp;
-	WeaponInfoComponent weps[MAX_HARDPOINTS]; //since weapon info components have their ids, we should be able to pull any necessary data back out when loading
-	WeaponInfoComponent physWep;
+	WeaponInstance* weps[MAX_HARDPOINTS]; //since weapon info components have their ids, we should be able to pull any necessary data back out when loading
+	WeaponInstance* physWep;
+	WingmanData* inUseBy = nullptr;
 };
 
 #endif 

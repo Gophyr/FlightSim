@@ -41,15 +41,6 @@ ITexture* Assets::getHUDAsset(std::string name)
 	return HUDAssets[name];
 }
 
-ISoundSource* Assets::getSoundAsset(std::string name)
-{
-	if (soundAssets[name]) {
-		return soundAssets[name];
-	}
-	soundAssets[name] = soundEngine->getSoundSource(fileLocations[name].c_str());
-	return soundAssets[name];
-}
-
 btConvexHullShape Assets::getHullAsset(std::string name) 
 {
 	if (hullAssets.find(name) != hullAssets.end()) {
@@ -102,7 +93,6 @@ void Assets::clearLoadedGameAssets()
 	HUDAssets.clear();
 	textureAssets.clear();
 	hullAssets.clear();
-	soundAssets.clear();
 }
 
 void Assets::setFilenames() 

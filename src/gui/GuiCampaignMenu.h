@@ -39,6 +39,7 @@ struct LoadoutHUD
 	IGUIImage* img;
 	IGUIButton* button;
 	IGUIButton* toLoadoutMenu;
+	IGUIButton* wingmanButton;
 	bool isOpen = false;
 	f32 timer = 0;
 };
@@ -70,10 +71,11 @@ class GuiCampaignMenu : public GuiDialog
 		bool onStart(const SEvent& event);
 		bool onMenu(const SEvent& event);
 		bool onLoadout(const SEvent& event);
+		bool onWingman(const SEvent& event);
 		bool onLoadoutMenuSelect(const SEvent& event);
 		bool moveLoadout(f32 dt);
-		bool moveSectorInfo(f32 dt);
-		bool onShowSectorInfo(const SEvent& event);
+		bool moveScenarioInfo(f32 dt);
+		bool onShowScenarioInfo(const SEvent& event);
 
 		bool onAdvance(const SEvent& event);
 		bool advanceConfirm(const SEvent& event);

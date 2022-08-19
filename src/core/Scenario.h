@@ -12,19 +12,19 @@ enum SCENARIO_TYPE
 	SCENARIO_SALVAGE,
 	SCENARIO_MAX_TYPES,
 	SCENARIO_SCRAMBLE, // this is outside because we don't want this to generate when creating random scenarios
-	SCENARIO_CARRIER_BATTLE,
+	SCENARIO_CARRIER_BATTLE, //ditto, this is a larger boss fight
 	SCENARIO_NOT_LOADED
 };
 
-//Different types of scenario environment available.
-enum SCENARIO_ENVIRONMENT
+enum SECTOR_TYPE
 {
-	SCENENV_ASTEROID_FIELD,
-	SCENENV_GAS_FIELD,
-	SCENENV_EMPTY,
-	SCENENV_DEBRIS_FIELD,
-	SCENENV_SPACE_STATION,
-	SCENENV_MAX_ENVIRONMENTS
+	SECTOR_DEBRIS = 0,
+	SECTOR_ASTEROID = 1,
+	SECTOR_GAS = 2,
+	SECTOR_SUPPLY_DEPOT = 3,
+	SECTOR_GAS_GIANT = 4,
+	SECTOR_FLEET_GROUP = 5,
+	SECTOR_FINALE = 6
 };
 
 //Strings for loading a scenario from file.
@@ -37,12 +37,14 @@ const std::unordered_map<SCENARIO_TYPE, std::string> scenarioStrings = {
 };
 
 //Strings for loading and displaying a scenario environment.
-const std::unordered_map<SCENARIO_ENVIRONMENT, std::string> scenarioEnvStrings = {
-	{SCENENV_ASTEROID_FIELD, "Asteroid Field"},
-	{SCENENV_GAS_FIELD, "Gas Field"},
-	{SCENENV_EMPTY, "Empty Space"},
-	{SCENENV_DEBRIS_FIELD, "Debris Field"},
-	{SCENENV_SPACE_STATION, "Space Station"}
+const std::unordered_map<SECTOR_TYPE, std::string> scenarioEnvStrings = {
+	{SECTOR_DEBRIS, "debris"},
+	{SECTOR_ASTEROID, "asteroid"},
+	{SECTOR_GAS, "gas"},
+	{SECTOR_SUPPLY_DEPOT, "supply_depot"},
+	{SECTOR_GAS_GIANT, "gas_giant"},
+	{SECTOR_FLEET_GROUP, "fleet_group"},
+	{SECTOR_FINALE, "final_battle"}
 };
 
 //Max amount of objectives possible (enemies to kill, things to blow up, etc).
@@ -58,11 +60,11 @@ struct Scenario
 {
 	Scenario() : complete(false)
 	{ }
-	Scenario(SCENARIO_TYPE type, SCENARIO_ENVIRONMENT env, u32 objCount, vector3df playerStart, vector3df enemyStart) :
+	Scenario(SCENARIO_TYPE type, SECTOR_TYPE env, u32 objCount, vector3df playerStart, vector3df enemyStart) :
 		type(type), objectiveCount(objCount), playerStartPos(playerStart), enemyStartPos(enemyStart), complete(false),
 		environment(env) { }
 	SCENARIO_TYPE type;
-	SCENARIO_ENVIRONMENT environment;
+	SECTOR_TYPE environment;
 	u32 detectionChance;
 
 	std::string location;

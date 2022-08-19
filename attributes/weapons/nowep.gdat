@@ -1,6 +1,9 @@
 model=none 
 texture=none
 particle=particlered.bmp
+fireSound=weapon_fire_kinetic.ogg
+impactSound=weapon_hit_kinetic.ogg
+
 id=0
 phys=0
 name=None

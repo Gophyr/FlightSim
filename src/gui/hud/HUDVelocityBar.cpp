@@ -9,7 +9,7 @@ HUDVelocityBar::HUDVelocityBar(IGUIElement* root) : HUDElement(root)
 	rect<s32> screen = root->getRelativePosition();
 
 	type = HUD_ELEM_TYPE::VELOCITY_BAR;
-	velocity = guienv->addImage(stateController->assets.getHUDAsset("velocitybar"), position2di(screen.getWidth() - 192, screen.getHeight() - 64), root);
+	velocity = guienv->addImage(assets->getHUDAsset("velocitybar"), position2di(screen.getWidth() - 192, screen.getHeight() - 64), root);
 	position = guienv->addStaticText(L"", rect<s32>(position2di(screen.getWidth() - (screen.getWidth()/2)-150, screen.getHeight() - 32), dimension2du(280, 32)), false, true, root);
 	velocityNum = guienv->addStaticText(L"", rect<s32>(position2di(screen.getWidth() - 190, screen.getHeight() - 96), dimension2du(192, 32)), false, true, root);
 	rotationSpeed = guienv->addStaticText(L"", rect<s32>(position2di(screen.getWidth() - 190, screen.getHeight() - 128), dimension2du(192, 32)), false, true, root);
@@ -18,7 +18,7 @@ HUDVelocityBar::HUDVelocityBar(IGUIElement* root) : HUDElement(root)
 	velocity->setVisible(true);
 	velocityNum->setVisible(true);
 	velocityNum->setOverrideColor(SColor(255, 200, 200, 200));
-	IGUIFont* fnt = stateController->assets.getFontAsset("HUDFont");
+	IGUIFont* fnt = assets->getFontAsset("HUDFont");
 	velocityNum->setOverrideFont(fnt);
 	position->setVisible(true);
 	position->setOverrideColor(SColor(255, 200, 200, 200));
@@ -44,12 +44,13 @@ void HUDVelocityBar::updateElement(flecs::entity playerId)
 {
 	auto irr = playerId.get<IrrlichtComponent>();
 	auto ship = playerId.get<ShipComponent>();
+	auto thrust = playerId.get<ThrustComponent>();
 	auto rbc = playerId.get<BulletRigidBodyComponent>();
 	auto player = playerId.get<PlayerComponent>();
 
-	btVector3 pos = rbc->rigidBody.getCenterOfMassPosition();
-	btScalar velLen = rbc->rigidBody.getLinearVelocity().length();
-	btScalar angLen = rbc->rigidBody.getAngularVelocity().length();
+	btVector3 pos = rbc->rigidBody->getCenterOfMassPosition();
+	btScalar velLen = rbc->rigidBody->getLinearVelocity().length();
+	btScalar angLen = rbc->rigidBody->getAngularVelocity().length();
 
 	std::string x, y, z;
 	x = fprecis(pos.x(), 5);
@@ -58,7 +59,7 @@ void HUDVelocityBar::updateElement(flecs::entity playerId)
 
 	std::string velnum = fprecis(velLen, 5);
 	std::string angnum = fprecis(angLen * RADTODEG, 5);
-	std::string overtoggle = (ship->safetyOverride) ? "OFF" : "ON";
+	std::string overtoggle = (thrust->safetyOverride) ? "OFF" : "ON";
 
 	std::string vel = "Velocity: " + velnum;
 	std::string postext = "Position: " + x + ", " + y + ", " + z;
@@ -70,7 +71,7 @@ void HUDVelocityBar::updateElement(flecs::entity playerId)
 	rotationSpeed->setText(std::wstring(ang.begin(), ang.end()).c_str());
 	overrideStatus->setText(std::wstring(over.begin(), over.end()).c_str());
 
-	f32 maxvel = ship->linearMaxVelocity;
+	f32 maxvel = thrust->linearMaxVelocity;
 	rect<s32> screenrect = player->rootHUD->getRelativePosition();
 	dimension2du newsize; 
 	u32 width = (u32)((velLen / maxvel) * 192);

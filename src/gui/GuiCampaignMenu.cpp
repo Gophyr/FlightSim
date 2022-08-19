@@ -34,7 +34,7 @@ void GuiCampaignMenu::init()
 		IGUIButton* button = guienv->addButton(rect<s32>(position2di(startX + (size.Width * i) + (buf * i), startY), size), root, (s32)i, L"", L"Possible scenario");
 		setHoloButton(button, true);
 		hud.scenarioSelects[i] = button;
-		guiController->setCallback(button, std::bind(&GuiCampaignMenu::onShowSectorInfo, this, std::placeholders::_1));
+		guiController->setCallback(button, std::bind(&GuiCampaignMenu::onShowScenarioInfo, this, std::placeholders::_1));
 	}
 
 	hud.toMenu = guienv->addButton(rect<s32>(position2di(0, 0), dimension2du(90, 55)), hud.HUDimg, CAMPAIGN_TO_MENU, L"Menu", L"Back out for now.");
@@ -72,12 +72,15 @@ void GuiCampaignMenu::init()
 	setHoloButton(loadout.button);
 	loadout.toLoadoutMenu = guienv->addButton(rect<s32>(position2di(67, 70), dimension2du(260, 40)), loadout.img, -1, L"Set Loadout", L"Set your ship and loadout.");
 	setHoloButton(loadout.toLoadoutMenu);
+	loadout.wingmanButton = guienv->addButton(rect<s32>(position2di(67, 115), dimension2du(260, 40)), loadout.img, -1, L"Set Wingmen", L"Select your wingmen.");
+	setHoloButton(loadout.wingmanButton);
 
 	guiController->setCallback(loadout.button, std::bind(&GuiCampaignMenu::onLoadout, this, std::placeholders::_1));
 	guiController->setCallback(loadout.toLoadoutMenu, std::bind(&GuiCampaignMenu::onLoadoutMenuSelect, this, std::placeholders::_1));
 	guiController->setCallback(hud.advance, std::bind(&GuiCampaignMenu::onAdvance, this, std::placeholders::_1));
+	guiController->setCallback(loadout.wingmanButton, std::bind(&GuiCampaignMenu::onWingman, this, std::placeholders::_1));
 	guiController->setAnimationCallback(loadout.button, std::bind(&GuiCampaignMenu::moveLoadout, this, std::placeholders::_1));
-	guiController->setAnimationCallback(scenariohud.launch, std::bind(&GuiCampaignMenu::moveSectorInfo, this, std::placeholders::_1));
+	guiController->setAnimationCallback(scenariohud.launch, std::bind(&GuiCampaignMenu::moveScenarioInfo, this, std::placeholders::_1));
 
 	guiController->setAnimationCallback(hud.advance, std::bind(&GuiCampaignMenu::moveAdvance, this, std::placeholders::_1));
 	hide();
@@ -87,18 +90,19 @@ void GuiCampaignMenu::show()
 {
 	root->setRelativePosition(rect<s32>(position2di(0, 0), driver->getScreenSize()));
 	root->setVisible(true);
+
 	for (u32 i = 0; i < NUM_SCENARIO_OPTIONS; ++i) {
-		Scenario scen = stateController->campaign.possibleScenarios[i];
-		std::wstring title = wstr(stateController->campaign.possibleScenarios[i].location);
+		Scenario scen = campaign->getSector()->getScenario(i);
+		std::wstring title = wstr(scen.location);
 		hud.scenarioSelects[i]->setText(title.c_str());
 	}
 	std::string info = "Ship Information \n \n";
-	info += "Total Ammo: \n" + std::to_string(stateController->campaign.totalAmmunition);
-	info += "\n Repair Capacity: \n" + fprecis(stateController->campaign.totalRepairCapacity, 5);
+	info += "Total Ammo: \n" + std::to_string(campaign->getAmmo());
+	info += "\n Supplies: \n" + fprecis(campaign->getSupplies(), 5);
 	hud.info->setText(wstr(info).c_str());
 	stateController->inCampaign = true;
 
-	if (stateController->campaign.moved) {
+	if (campaign->getSector()->hasMoved()) {
 		for (u32 i = 0; i < NUM_SCENARIO_OPTIONS; ++i) {
 			hud.scenarioSelects[i]->setVisible(true);
 		}
@@ -115,8 +119,8 @@ void GuiCampaignMenu::show()
 	s32 baseAdvanceX = (s32)((275.f / 960.f) * root->getRelativePosition().getWidth());
 	s32 move = (s32)((80.f / 960.f) * root->getRelativePosition().getWidth());
 
-	hud.advance->setRelativePosition(position2di(baseAdvanceX + stateController->campaign.currentEncounter * move, hud.advance->getRelativePosition().UpperLeftCorner.Y));
-	hud.shipSprite->setRelativePosition(position2di(baseShipX + stateController->campaign.currentEncounter * move, hud.shipSprite->getRelativePosition().UpperLeftCorner.Y));
+	hud.advance->setRelativePosition(position2di(baseAdvanceX + campaign->getSector()->getEncounterNum() *move, hud.advance->getRelativePosition().UpperLeftCorner.Y));
+	hud.shipSprite->setRelativePosition(position2di(baseShipX + campaign->getSector()->getEncounterNum() * move, hud.shipSprite->getRelativePosition().UpperLeftCorner.Y));
 }
 
 bool GuiCampaignMenu::onStart(const SEvent& event)
@@ -125,7 +129,7 @@ bool GuiCampaignMenu::onStart(const SEvent& event)
 	if (event.GUIEvent.EventType != EGET_BUTTON_CLICKED) return true;
 	guiController->callAnimation(scenariohud.launch);
 	stateController->setState(GAME_RUNNING);
-	stateController->changeMusic(stateController->assets.getSoundAsset("battleMusic"));
+	audioDriver->playMusic("combat_default.ogg");
 	return false;
 }
 
@@ -134,7 +138,14 @@ bool GuiCampaignMenu::onMenu(const SEvent& event)
 	if (event.GUIEvent.EventType != EGET_BUTTON_CLICKED) return true;
 	guiController->setActiveDialog(GUI_MAIN_MENU);
 	stateController->inCampaign = false;
-	stateController->changeMusic(stateController->assets.getSoundAsset("menuMusic"));
+	audioDriver->playMusic("main_menu.ogg");
+	return false;
+}
+
+bool GuiCampaignMenu::onWingman(const SEvent& event)
+{
+	if (event.GUIEvent.EventType != EGET_BUTTON_CLICKED) return true;
+	guiController->setActiveDialog(GUI_WINGMAN_MENU);
 	return false;
 }
 
@@ -177,26 +188,26 @@ bool GuiCampaignMenu::onLoadoutMenuSelect(const SEvent& event)
 	return false;
 }
 
-bool GuiCampaignMenu::onShowSectorInfo(const SEvent& event)
+bool GuiCampaignMenu::onShowScenarioInfo(const SEvent& event)
 {
 	if (event.GUIEvent.EventType != EGET_BUTTON_CLICKED) return true;
 	s32 id = event.GUIEvent.Caller->getID();
 	if (!sectorInfoShowing || scenariohud.showing == id) {
 		guiController->callAnimation(scenariohud.launch);
 	}
-	std::wstring name = wstr(stateController->campaign.possibleScenarios[id].location);
-	std::string desc = stateController->campaign.possibleScenarios[id].description;
+	Scenario scen = campaign->getSector()->getScenario(id);
+	std::wstring name = wstr(scen.location);
+	std::string desc = scen.description;
 	desc += "\n \n";
-	desc += "Detection chance: " + std::to_string(stateController->campaign.possibleScenarios[id].detectionChance) + "%";
+	desc += "Detection chance: " + std::to_string(scen.detectionChance) + "%";
 	scenariohud.name->setText(name.c_str());
 	scenariohud.desc->setText(wstr(desc).c_str());
 	scenariohud.showing = id;
-	stateController->campaign.currentScenario = stateController->campaign.possibleScenarios[id];
-
+	campaign->getSector()->selectCurrentScenario(id);
 	return false;
 }
 
-bool GuiCampaignMenu::moveSectorInfo(f32 dt)
+bool GuiCampaignMenu::moveScenarioInfo(f32 dt)
 {
 	f32 launchRatioOpen = 4.f / 540.f;
 	f32 launchRatioClosed = 55.f / 540.f;
@@ -241,22 +252,8 @@ bool GuiCampaignMenu::onAdvance(const SEvent& event)
 bool GuiCampaignMenu::advanceConfirm(const SEvent& event)
 {
 	if (event.GUIEvent.EventType != EGET_BUTTON_CLICKED) return true;
-	if (stateController->campaign.currentScenario.detected()) {
+	campaign->advance();
 
-		Scenario scramble = scrambleScenario();
-		for (u32 i = 0; i < NUM_SCENARIO_OPTIONS; ++i) {
-			stateController->campaign.possibleScenarios[i] = scramble;
-			std::wstring title = wstr(stateController->campaign.possibleScenarios[i].location);
-			hud.scenarioSelects[i]->setText(title.c_str());
-		}
-		hud.scenarioSelects[1]->setVisible(true);
-		hud.advance->setVisible(false);
-		soundEngine->play2D("audio/shieldhit_major.ogg");
-		return false; 
-	}
-
-	stateController->campaign.moved = true;
-	++stateController->campaign.currentEncounter;
 	for (u32 i = 0; i < NUM_SCENARIO_OPTIONS; ++i) {
 		hud.scenarioSelects[i]->setVisible(true);
 	}
@@ -268,7 +265,7 @@ bool GuiCampaignMenu::moveAdvance(f32 dt)
 {
 	s32 baseShipX = (s32)((275.f / 960.f) * root->getRelativePosition().getWidth());
 	s32 move = (s32)((80.f / 960.f) * root->getRelativePosition().getWidth());
-	position2di shipMove = position2di(baseShipX + stateController->campaign.currentEncounter * move, hud.shipSprite->getRelativePosition().UpperLeftCorner.Y);
+	position2di shipMove = position2di(baseShipX + campaign->getSector()->getEncounterNum() * move, hud.shipSprite->getRelativePosition().UpperLeftCorner.Y);
 	position2di shipOld = shipMove;
 	shipOld.X -= move;
 

@@ -49,18 +49,9 @@ bool initializeDefaultHUD(flecs::entity playerId);
 void initializeAI(flecs::entity id, AI_TYPE type, f32 reactSpeed, f32 damageTolerance);
 //Creates an AI component with default values.
 void initializeDefaultAI(flecs::entity id);
+//Creates an AI component with ace values.
+void initializeAceAI(flecs::entity id);
 
 //Creates an explosion at the point that lasts for the duration.
 flecs::entity explode(vector3df position, f32 duration, f32 scale, f32 radius, f32 damage, f32 force);
-
-//Gets the data from the player ship at the end of a scenario.
-ShipInstance getEndScenarioData();
-//Constructs a new ship instance.
-ShipInstance newShipInstance();
-//Initializes a new campaign with default values.
-void initNewCampaign();
-
-ShipInstance randomShipInstance();
-WeaponInfoComponent randomWeapon();
-
 #endif

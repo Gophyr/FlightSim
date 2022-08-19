@@ -1,8 +1,13 @@
 model=basicmissile/MissileLauncher.obj
 texture=basicmissile/MissileLauncher.png
 particle=smokejet.png
+
+fireSound=weapon_fire_kinetic.ogg
+impactSound=weapon_hit_kinetic.ogg
+
 missilemodel=basicmissile/Missile.obj
 missiletexture=basicmissile/Missile.png
+
 id=2
 phys=0
 name=Halberd Missile

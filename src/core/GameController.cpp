@@ -22,18 +22,18 @@ void GameController::update()
 	then = now;
 	accumulator += delta;
 	while (accumulator >= dt) {
-		game_world->progress(dt);
 		bWorld->stepSimulation(dt, 60);
-		//sceneManager->update(dt, delta); //in-game logic and physics
+		game_world->progress(dt);
 		t += dt;
 		accumulator -= dt;
 	}
-	/*
-	if (objectiveSystem(dt)) {
-		stateController->setState(GAME_FINISHED);
-	}
-	*/
-
+	bool complete = true;
+	game_world->each([&complete](flecs::entity e, ObjectiveComponent& obj) {
+		if (!isObjectiveCompleted(e)) {
+			complete = false;
+		}
+		});
+	if (complete) stateController->setState(GAME_FINISHED);
 	//interpolate leftover time?
 	const f32 alpha = accumulator / dt;
 }
@@ -47,8 +47,7 @@ void GameController::init()
 	guienv = device->getGUIEnvironment();
 	then = device->getTimer()->getTime();
 
-	//Scenario defScenario(SCENARIO_KILL_HOSTILES, SCENENV_ASTEROID_FIELD, 1, vector3df(0, 0, -50), vector3df(10, 20, 80));
-	currentScenario = stateController->campaign.currentScenario;
+	currentScenario = campaign->getSector()->getCurrentScenario();
 
 	//bullet init
 	broadPhase = new bt32BitAxisSweep3(btVector3(-100000, -100000, -100000), btVector3(100000, 100000, 100000));
@@ -67,33 +66,75 @@ void GameController::init()
 
 	collCb = new broadCallback();
 	bWorld->getPairCache()->setOverlapFilterCallback(collCb);
+
+	//ecs init
+	game_world = new flecs::world();
+	registerComponents();
+	registerSystems();
+	open = true;
+}
+
+void GameController::registerComponents()
+{
+	game_world->component<AIComponent>();
+	game_world->component<BulletGhostComponent>();
+	game_world->component<BulletRigidBodyComponent>();
+	game_world->component<DamageTrackingComponent>();
+	game_world->component<ExplosionComponent>();
+	game_world->component<HealthComponent>();
+	game_world->component<IrrlichtComponent>();
+	game_world->component<ObjectiveComponent>();
+	game_world->component<ObstacleComponent>();
+	game_world->component<InputComponent>();
+	game_world->component<PlayerComponent>();
+	game_world->component<CarrierComponent>();
+	game_world->component<FactionComponent>();
+	game_world->component<SensorComponent>();
+	game_world->component<ShipComponent>();
+	game_world->component<ShipParticleComponent>();
+	game_world->component<BolasInfoComponent>();
+	game_world->component<KineticInfoComponent>();
+	game_world->component<MissileInfoComponent>();
+	game_world->component<MissileProjectileComponent>();
+	game_world->component<WeaponInfoComponent>();
+	game_world->component<ProjectileInfoComponent>();
+	game_world->component<ThrustComponent>();
+	game_world->component<HardpointComponent>();
+	//not added: turret, harpoon
+}
+void GameController::registerSystems()
+{
 	/*
-	*	flecs::OnLoad
-	*	flecs::PostLoad
-	*	flecs::PreUpdate
-	*	flecs::OnUpdate
-	*	flecs::OnValidate
-	*	flecs::PostUpdate
-	*	flecs::PreStore
-	*	flecs::OnStore
-	*/
+*	flecs::OnLoad
+*	flecs::PostLoad
+*	flecs::PreUpdate
+*	flecs::OnUpdate
+*	flecs::OnValidate
+*	flecs::PostUpdate
+*	flecs::PreStore
+*	flecs::OnStore
+*/
+	auto playerctrl = game_world->system<InputComponent, HardpointComponent, ShipComponent, ThrustComponent, PlayerComponent, BulletRigidBodyComponent, IrrlichtComponent, SensorComponent>()
+		.no_staging().kind(flecs::PreUpdate).iter(shipControlSystem);
+	auto aictrl = game_world->system<AIComponent, IrrlichtComponent, BulletRigidBodyComponent, ThrustComponent, HardpointComponent, SensorComponent, HealthComponent>()
+		.no_staging().kind(flecs::PreUpdate).iter(AIUpdateSystem);
+
+	game_world->system().kind(flecs::OnUpdate).no_staging().iter(collisionCheckingSystem);
 	game_world->system<WeaponInfoComponent, IrrlichtComponent>().kind(flecs::OnUpdate).iter(weaponFiringSystem);
-	game_world->system<HealthComponent>().kind(flecs::OnUpdate).iter(healthSystem);
-	game_world->system<ShieldComponent>().kind(flecs::OnUpdate).iter(shieldSystem);
-	game_world->system<AIComponent, IrrlichtComponent>().kind(flecs::OnUpdate).iter(AIUpdateSystem);
 	game_world->system<CarrierComponent, IrrlichtComponent, FactionComponent>().kind(flecs::OnUpdate).iter(carrierUpdateSystem);
-	game_world->system().kind(flecs::OnUpdate).iter(collisionCheckingSystem);
-	game_world->system<DamageTrackingComponent, HealthComponent>().kind(flecs::OnUpdate).iter(damageSystem);
-	game_world->system<ExplosionComponent>().kind(flecs::OnUpdate).iter(explosionSystem);
+	game_world->system<BulletRigidBodyComponent, SensorComponent, FactionComponent>().kind(flecs::OnUpdate).iter(sensorSystem);
+	game_world->system<DamageTrackingComponent, HealthComponent>().no_staging().kind(flecs::OnUpdate).iter(damageSystem);
+	game_world->system<ExplosionComponent, IrrlichtComponent>().kind(flecs::OnUpdate).iter(explosionSystem);
 	game_world->system<BulletRigidBodyComponent, IrrlichtComponent>().kind(flecs::OnUpdate).iter(irrlichtRigidBodyPositionSystem);
-	game_world->system<ObjectiveComponent>().kind(flecs::OnUpdate).iter(objectiveSystem);
 	game_world->system<IrrlichtComponent, PlayerComponent, BulletRigidBodyComponent, SensorComponent>().kind(flecs::OnUpdate).iter(playerUpdateSystem);
 	game_world->system<BulletRigidBodyComponent, ProjectileInfoComponent, IrrlichtComponent>().kind(flecs::OnUpdate).iter(projectileSystem);
-	game_world->system<BulletRigidBodyComponent, SensorComponent, FactionComponent>().kind(flecs::OnUpdate).iter(sensorSystem);
-	game_world->system<InputComponent, ShipComponent, PlayerComponent, BulletRigidBodyComponent, IrrlichtComponent, SensorComponent>().kind(flecs::OnUpdate).iter(shipControlSystem);
-	game_world->system<ShipComponent, BulletRigidBodyComponent, IrrlichtComponent, ShipParticleComponent>().kind(flecs::OnUpdate).iter(shipUpdateSystem);
+
+	game_world->system<ThrustComponent, ShipComponent, BulletRigidBodyComponent, IrrlichtComponent, ShipParticleComponent>().kind(flecs::OnUpdate).iter(shipUpdateSystem);
+	game_world->system<ThrustComponent, HealthComponent, BulletRigidBodyComponent, IrrlichtComponent>().kind(flecs::OnUpdate).iter(thrustSystem);
+
 	game_world->system().kind(flecs::OnUpdate).iter(soundSystem);
-	open = true;
+	game_world->system<HealthComponent>().kind(flecs::OnUpdate).iter(healthSystem);
+	game_world->system<ShieldComponent>().kind(flecs::OnUpdate).iter(shieldSystem);
 }
 
 void GameController::close()
@@ -110,16 +151,31 @@ void GameController::close()
 	delete bWorld; //this likely leaks some memory
 	delete collCb;
 	delete gPairCb;
+	game_world->each([](flecs::entity e) {
+		destroyObject(e);
+		});
+	game_world->quit();
+	delete game_world;
 
 	//todo: need to clean out the ECS
-	sounds.clear();
-	stateController->assets.clearLoadedGameAssets();
+	assets->clearLoadedGameAssets();
 	open = false;
+}
+
+void GameController::setPlayer(flecs::entity_t id)
+{
+	playerEntity = id;
+}
+flecs::entity GameController::getPlayer()
+{
+	return flecs::entity(game_world->get_world(), playerEntity);
 }
 
 void GameController::clearPlayerHUD()
 {
-	auto plyc = playerEntity.get_mut<PlayerComponent>();
+	if (!getPlayer().is_alive()) return;
+
+	auto plyc = getPlayer().get_mut<PlayerComponent>();
 	for (HUDElement* hud : plyc->HUD) {
 		delete hud;
 	}
@@ -129,9 +185,9 @@ void GameController::clearPlayerHUD()
 bool GameController::OnEvent(const SEvent& event)
 {
 	if (!open) return true;
-	if (!playerEntity.is_alive()) return true;
-	if(!playerEntity.has<InputComponent>()) return true;
-	auto input = playerEntity.get_mut<InputComponent>();
+	if (!getPlayer().is_alive()) return true;
+	if(!getPlayer().has<InputComponent>()) return true;
+	auto input = getPlayer().get_mut<InputComponent>();
 	if (event.EventType == EET_KEY_INPUT_EVENT) {
 		input->keysDown[event.KeyInput.Key] = event.KeyInput.PressedDown;
 		if(event.KeyInput.Key == KEY_KEY_Y && !input->keysDown[KEY_KEY_Y]) {

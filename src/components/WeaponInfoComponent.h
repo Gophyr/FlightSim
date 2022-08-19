@@ -52,6 +52,7 @@ const std::map<std::string, WEAPON_TYPE> weaponStrings{
 struct WeaponInfoComponent
 {
 	u32 wepDataId;
+	bool phys;
 	WEAPON_TYPE type;
 	DAMAGE_TYPE dmgtype;
 	f32 firingSpeed; //how long it should take in seconds between shots
@@ -71,6 +72,8 @@ struct WeaponInfoComponent
 	f32 reloadTime;
 
 	ITexture* particle;
+	std::string fireSound;
+	std::string impactSound;
 };
 
 //PROJECTILE ENTITIES:
@@ -89,6 +92,7 @@ struct ProjectileInfoComponent
 	f32 lifetime;
 	f32 currentLifetime;
 	vector3df startPos;
+	std::string impactSound;
 };
 
 #endif

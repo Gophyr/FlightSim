@@ -38,20 +38,24 @@ u32 loadShipData(std::string path, gvReader& in, bool carrier)
 	data->engineTexture = enginepath;
 	data->jetTexture = enginepath;
 
-	data->shipComponent.forwardThrust = std::stof(in.values["forwardThrust"]);
-	data->shipComponent.brakeThrust = std::stof(in.values["brakeThrust"]);
-	data->shipComponent.strafeThrust = std::stof(in.values["strafeThrust"]);
-	data->shipComponent.pitchThrust = std::stof(in.values["pitchThrust"]);
-	data->shipComponent.yawThrust = std::stof(in.values["yawThrust"]);
-	data->shipComponent.rollThrust = std::stof(in.values["rollThrust"]);
+	data->thrustComponent.forward = std::stof(in.values["forwardThrust"]);
+	data->thrustComponent.brake = std::stof(in.values["brakeThrust"]);
+	data->thrustComponent.strafe = std::stof(in.values["strafeThrust"]);
+	data->thrustComponent.pitch = std::stof(in.values["pitchThrust"]);
+	data->thrustComponent.yaw = std::stof(in.values["yawThrust"]);
+	data->thrustComponent.roll = std::stof(in.values["rollThrust"]);
+	data->thrustComponent.velocityTolerance = std::stof(in.values["velocityTolerance"]);
+	data->thrustComponent.linearMaxVelocity = std::stof(in.values["linearMaxVelocity"]);
+	data->thrustComponent.angularMaxVelocity = std::stof(in.values["angularMaxVelocity"]);
+	data->thrustComponent.boost = std::stof(in.values["afterburnerThrust"]);
 
-	data->shipComponent.hardpointCount = std::stoi(in.values["hardpointCount"]);
+	data->hardpointComponent.hardpointCount = std::stoi(in.values["hardpointCount"]);
 
 	std::string val;
-	for (unsigned int i = 0; i < data->shipComponent.hardpointCount; ++i) {
+	for (unsigned int i = 0; i < data->hardpointComponent.hardpointCount; ++i) {
 		val = "hardpoint" + std::to_string(i);
-		data->shipComponent.hardpoints[i] = strToVec(in.values[val]);
-		data->shipComponent.weapons[i] = INVALID_ENTITY;
+		data->hardpointComponent.hardpoints[i] = strToVec(in.values[val]);
+		//data->shipComponent.weapons[i] = INVALID_ENTITY;
 	}
 	for (unsigned int i = 0; i < 2; ++i) {
 		val = "upJetPos" + std::to_string(i);
@@ -74,18 +78,14 @@ u32 loadShipData(std::string path, gvReader& in, bool carrier)
 		data->shipComponent.reverseJetPos[i] = strToVec(in.values[val]);
 	}
 	data->shipComponent.engineJetPos = strToVec(in.values["engineJetPos"]);
-	data->shipComponent.physWeaponHardpoint = strToVec(in.values["physWeaponHardpoint"]);
+	data->hardpointComponent.physWeaponHardpoint = strToVec(in.values["physWeaponHardpoint"]);
 
-	data->shipComponent.velocityTolerance = std::stof(in.values["velocityTolerance"]);
-	data->shipComponent.linearMaxVelocity = std::stof(in.values["linearMaxVelocity"]);
-	data->shipComponent.angularMaxVelocity = std::stof(in.values["angularMaxVelocity"]);
-	data->shipComponent.afterburnerThrust = std::stof(in.values["afterburnerThrust"]);
 	data->shipComponent.afterburnerFuel = std::stof(in.values["afterburnerFuel"]);
 	data->shipComponent.maxAfterburnerFuel = data->shipComponent.afterburnerFuel;
 	data->shipComponent.afterburnerFuelEfficiency = std::stof(in.values["afterburnerFuelEfficiency"]);
 
 	data->shipComponent.afterburnerOn = false;
-	data->shipComponent.safetyOverride = false;
+	data->thrustComponent.safetyOverride = false;
 	data->shipComponent.shipDataId = id;
 
 	if (carrier) {
@@ -96,15 +96,61 @@ u32 loadShipData(std::string path, gvReader& in, bool carrier)
 		carr->carrierComponent.reserveShips = in.getUint("reserveShips");
 		carr->carrierComponent.spawnRate = in.getFloat("spawnRate");
 		carr->carrierComponent.scale = carr->scale;
-		carr->mass = in.getFloat("mass");
-		stateController->carrierData[id] = carr;
+		carr->mass = in.getUint("mass");
+
+		carr->carrierComponent.turretCount = in.getUint("turretCount");
+		for (u32 i = 0; i < carr->carrierComponent.turretCount; ++i) {
+			std::string pos = "turretPos" + std::to_string(i);
+			std::string rot = "turretRot" + std::to_string(i);
+			carr->carrierComponent.turretPositions[i] = in.getVec(pos);
+			carr->carrierComponent.turretRotations[i] = in.getVec(rot);
+		}
+
+		carrierData[id] = carr;
 	}
 	else {
-		stateController->shipData[id] = data;
+		shipData[id] = data;
 	}
 	std::cout << "Done.\n";
 	return id;
 }
+
+u32 loadTurretData(std::string path, gvReader& in)
+{
+	std::cout << "Reading turret in from: " << path << "... ";
+	in.read(path);
+	if (in.lines.empty()) {
+		std::cout << "Could not read " << path << "!\n";
+		return -1;
+	}
+	in.readLinesToValues();
+	u32 id = in.getUint("id");
+	std::string name = in.getString("name");
+
+	TurretData* data = new TurretData;
+
+	std::string meshpath = "models/" + in.getString("model");
+	std::string texpath = "models/" + in.getString("texture");
+	std::string normpath = "models/" + in.getString("norm");
+	data->mesh = meshpath;
+	data->texture = texpath;
+	data->norm = normpath;
+	data->id = id;
+	data->name = name;
+	data->description = in.getString("description");
+
+	data->hardpointComponent.hardpointCount = in.getUint("hardpointCount");
+	for (u32 i = 0; i < data->hardpointComponent.hardpointCount; ++i) {
+		data->hardpointComponent.hardpoints[i] = in.getVec("hardpoint" + std::to_string(i));
+	}
+	data->thrustComponent.pitch = in.getFloat("pitchThrust");
+	data->thrustComponent.yaw = in.getFloat("yawThrust");
+
+	turretData[id] = data;
+	std::cout << "Done. \n";
+	return id;
+}
+
 
 void loadAmmoData(WeaponData* data, gvReader& in)
 {
@@ -115,7 +161,6 @@ void loadAmmoData(WeaponData* data, gvReader& in)
 	data->weaponComponent.clip = data->weaponComponent.clip;
 
 }
-
 u32 loadWeaponData(std::string path, gvReader& in)
 {
 	std::cout << "Reading weapon in from: " << path << "... ";
@@ -143,6 +188,9 @@ u32 loadWeaponData(std::string path, gvReader& in)
 		delete data;
 		data = new BolasData;
 	}
+	data->weaponComponent.fireSound = in.getString("fireSound");
+	data->weaponComponent.impactSound = in.getString("impactSound");
+
 	data->id = id;
 	data->name = name;
 	data->description = in.values["description"];
@@ -191,12 +239,13 @@ u32 loadWeaponData(std::string path, gvReader& in)
 		cmp.constraint = nullptr;
 		cmp.currentDuration = 0.f;
 		cmp.duration = in.getFloat("duration");
-		cmp.target1 = INVALID_ENTITY;
-		cmp.target2 = INVALID_ENTITY;
+		//cmp.target1 = INVALID_ENTITY;
+		//cmp.target2 = INVALID_ENTITY;
 		cmp.timeToHit = in.getFloat("timeToHit");
 		cmp.currentTimeToHit = 0.f;
 		cmp.force = in.getFloat("force");
 		BolasData* bdat = (BolasData*)data;
+		cmp.latchSound = in.getString("latchSound");
 		bdat->bolasComponent = cmp;
 
 	}
@@ -211,14 +260,16 @@ u32 loadWeaponData(std::string path, gvReader& in)
 	data->weaponComponent.timeSinceLastShot = 0.f;
 
 	bool phys = std::stoi(in.values["phys"]);
+	data->weaponComponent.phys = phys;
 	data->weaponComponent.wepDataId = id;
-	if (id == 0) {
+	/*if (id == 0) {
 		stateController->weaponData[id] = data;
 		stateController->physWeaponData[id] = data;
-	} else if (phys) {
-		stateController->physWeaponData[id] = data;
+	} else*/
+	if (phys) {
+		physWeaponData[id] = data;
 	} else {
-		stateController->weaponData[id] = data;
+		weaponData[id] = data;
 	}
 	std::cout << "Done.\n";
 	return id;
@@ -226,72 +277,120 @@ u32 loadWeaponData(std::string path, gvReader& in)
 
 bool loadShip(u32 id, flecs::entity entity, bool carrier)
 {
-	ShipData* data = stateController->shipData[id];
-	if (carrier) data = stateController->carrierData[id];
+	ShipData* data = shipData[id];
+	if (carrier) data = carrierData[id];
 
 	if (!data) return false;
 
-	auto ship = entity.get_mut<ShipComponent>();
-	auto irr = entity.get_mut<IrrlichtComponent>();
-	if (!irr || !ship) return false;
-	*ship = data->shipComponent;
+	IrrlichtComponent irr;
+	irr.name = data->name;
 
 	ITexture* norm = driver->getTexture(data->shipNorm.c_str());
-	ITexture* tex = stateController->assets.getTextureAsset(data->name);
-	IMesh* mesh = stateController->assets.getMeshAsset(data->name);
+	ITexture* tex = assets->getTextureAsset(data->name);
+	IMesh* mesh = assets->getMeshAsset(data->name);
 	if (norm) {
 		if (!mesh) {
 			auto initmesh = smgr->getMesh(data->shipMesh.c_str());
 			mesh = smgr->getMeshManipulator()->createMeshWithTangents(initmesh);
 			smgr->getMeshCache()->removeMesh(initmesh);
-			stateController->assets.setMeshAsset(data->name, mesh);
+			assets->setMeshAsset(data->name, mesh);
 		}
-		irr->node = smgr->addMeshSceneNode(mesh);
+		irr.node = smgr->addMeshSceneNode(mesh);
 		driver->makeNormalMapTexture(norm, 7.f);
-		irr->node->setMaterialTexture(1, norm);
-		irr->node->setMaterialType(EMT_PARALLAX_MAP_SOLID);
+		irr.node->setMaterialTexture(1, norm);
+		irr.node->setMaterialType(EMT_PARALLAX_MAP_SOLID);
 	}
 	else {
 		if (!mesh) {
 			mesh = smgr->getMesh(data->shipMesh.c_str());
-			stateController->assets.setMeshAsset(data->name, mesh);
+			assets->setMeshAsset(data->name, mesh);
 		}
-		irr->node = smgr->addMeshSceneNode(mesh);
+		irr.node = smgr->addMeshSceneNode(mesh);
 	}
 	if (!tex) {
 		tex = driver->getTexture(data->shipTexture.c_str());
-		stateController->assets.setTextureAsset(data->name, tex);
+		assets->setTextureAsset(data->name, tex);
 	}
-	irr->node->setMaterialTexture(0, tex);
+	irr.node->setMaterialTexture(0, tex);
 
-	irr->node->setName(idToStr(entity).c_str());
-	irr->node->setID(ID_IsSelectable | ID_IsAvoidable);
+	irr.node->setName(idToStr(entity).c_str());
+	irr.node->setID(ID_IsSelectable | ID_IsAvoidable);
 
 	if (carrier) {
 		CarrierData* cdata = (CarrierData*)data;
-		CarrierComponent* carr = entity.get_mut<CarrierComponent>();
-		*carr = cdata->carrierComponent;
-		irr->node->setScale(carr->scale);
+		entity.set<CarrierComponent>(cdata->carrierComponent);
+		irr.node->setScale(cdata->carrierComponent.scale);
 	}
+
+	HardpointComponent hards = data->hardpointComponent;
+	for (u32 i = 0; i < MAX_HARDPOINTS; ++i) {
+		hards.weapons[i] = INVALID_ENTITY;
+	}
+
+	entity.set<ShipComponent>(data->shipComponent);
+	entity.set<ThrustComponent>(data->thrustComponent);
+	entity.set<HardpointComponent>(hards);
+	entity.set<IrrlichtComponent>(irr);
 	return true;
 }
 
-bool loadWeapon(u32 id, flecs::entity weaponEntity, flecs::entity shipEntity, bool phys)
+bool loadTurret(u32 id, flecs::entity entity)
 {
-	WeaponData* data;
-	if (phys) data = stateController->physWeaponData[id];
-	else data = stateController->weaponData[id];
+	TurretData* data = turretData[id];
+	if (!data) return false;
+
+	IrrlichtComponent irr;
+	irr.name = data->name;
+
+	ITexture* norm = driver->getTexture(data->norm.c_str());
+	ITexture* tex = assets->getTextureAsset(data->name);
+	IMesh* mesh = assets->getMeshAsset(data->name);
+	if (norm) {
+		if (!mesh) {
+			auto initmesh = smgr->getMesh(data->mesh.c_str());
+			mesh = smgr->getMeshManipulator()->createMeshWithTangents(initmesh);
+			smgr->getMeshCache()->removeMesh(initmesh);
+			assets->setMeshAsset(data->name, mesh);
+		}
+		irr.node = smgr->addMeshSceneNode(mesh);
+		driver->makeNormalMapTexture(norm, 7.f);
+		irr.node->setMaterialTexture(1, norm);
+		irr.node->setMaterialType(EMT_PARALLAX_MAP_SOLID);
+	} else {
+		if (!mesh) {
+			mesh = smgr->getMesh(data->mesh.c_str());
+			assets->setMeshAsset(data->name, mesh);
+		}
+		irr.node = smgr->addMeshSceneNode(mesh);
+	}
+	if (!tex) {
+		tex = driver->getTexture(data->texture.c_str());
+		assets->setTextureAsset(data->name, tex);
+	}
+
+	irr.node->setMaterialTexture(0, tex);
+	irr.node->setName(idToStr(entity).c_str());
+	irr.node->setID(ID_IsSelectable | ID_IsAvoidable);
+
+	entity.set<IrrlichtComponent>(irr);
+	entity.set<ThrustComponent>(data->thrustComponent);
+	entity.set<HardpointComponent>(data->hardpointComponent);
+	return true;
+}
+
+bool loadWeapon(u32 id, flecs::entity weaponEntity, bool phys)
+{
+	WeaponData* data = nullptr;
+
+	if (phys) data = physWeaponData[id];
+	else data = weaponData[id];
 
 	if (!data) return false;
-	//assignments
-	auto wep = weaponEntity.get_mut<WeaponInfoComponent>();
-	auto irr = weaponEntity.get_mut<IrrlichtComponent>();
-	if (!wep || !irr) return false;
-	
-	weaponEntity.add(flecs::ChildOf, shipEntity);
 
-	IMesh* mesh = stateController->assets.getMeshAsset(data->name);
-	ITexture* tex = stateController->assets.getTextureAsset(data->name);
+	IrrlichtComponent irr;
+
+	IMesh* mesh = assets->getMeshAsset(data->name);
+	ITexture* tex = assets->getTextureAsset(data->name);
 	ITexture* norm = nullptr;
 	if (data->weaponNorm != "") norm = driver->getTexture(data->weaponNorm.c_str());
 
@@ -299,52 +398,58 @@ bool loadWeapon(u32 id, flecs::entity weaponEntity, flecs::entity shipEntity, bo
 		auto initmesh = smgr->getMesh(data->weaponMesh.c_str());
 		mesh = smgr->getMeshManipulator()->createMeshWithTangents(initmesh);
 		smgr->getMeshCache()->removeMesh(initmesh);
-		stateController->assets.setMeshAsset(data->name, mesh);
+		assets->setMeshAsset(data->name, mesh);
 	}
-	irr->node = smgr->addMeshSceneNode(mesh);
+	irr.node = smgr->addMeshSceneNode(mesh);
 	if (!tex) {
 		tex = driver->getTexture(data->weaponTexture.c_str());
-		stateController->assets.setTextureAsset(data->name, tex);
+		assets->setTextureAsset(data->name, tex);
 	}
-	irr->node->setMaterialTexture(0, tex);
+	irr.node->setMaterialTexture(0, tex);
 
 	if (norm) {
 		driver->makeNormalMapTexture(norm, 7.f);
-		irr->node->setMaterialTexture(1, norm);
-		irr->node->setMaterialType(EMT_PARALLAX_MAP_SOLID);
+		irr.node->setMaterialTexture(1, norm);
+		irr.node->setMaterialType(EMT_PARALLAX_MAP_SOLID);
 	}
 
-	irr->node->setName(idToStr(weaponEntity).c_str());
-	irr->node->setID(ID_IsNotSelectable);
-	wep->usesAmmunition = false;
+	irr.node->setName(idToStr(weaponEntity).c_str());
+	irr.node->setID(ID_IsNotSelectable);
 
-	*wep = data->weaponComponent;
+	//if(data->weaponComponent.phys) assets->setPhysWeaponFireSound(id, soundEngine->getSoundSource(data->weaponFireSound.c_str()));
+	//else assets->setWeaponFireSound(id, soundEngine->getSoundSource(data->weaponFireSound.c_str()));
+
+	WeaponInfoComponent wep = data->weaponComponent;
+
 	if (data->weaponComponent.type == WEP_MISSILE) {
-		auto miss = weaponEntity.get_mut<MissileInfoComponent>();
 		MissileData* mdata = (MissileData*)data;
-		*miss = mdata->missileComponent;
+		weaponEntity.set<MissileInfoComponent>(mdata->missileComponent);
+		auto miss = weaponEntity.get_mut<MissileInfoComponent>();
 		miss->missileMesh = smgr->getMesh(mdata->missileMesh.c_str());
 		miss->missileTexture = driver->getTexture(mdata->missileTexture.c_str());
-		wep->usesAmmunition = true;
+		wep.usesAmmunition = true;
 	}
 	if (data->weaponComponent.type == WEP_KINETIC) {
-		auto kin = weaponEntity.get_mut<KineticInfoComponent>();
 		KineticData* kdata = (KineticData*)data;
-		*kin = kdata->kineticComponent;
-		wep->clip = wep->maxClip;
-		wep->usesAmmunition = true; 
+		weaponEntity.set<KineticInfoComponent>(kdata->kineticComponent);
+		wep.clip = wep.maxClip;
+		wep.usesAmmunition = true; 
 	}
 	if (data->weaponComponent.type == WEP_PHYS_BOLAS) {
-		auto bolas = weaponEntity.get_mut<BolasInfoComponent>();
 		BolasData* bdata = (BolasData*)data;
+		weaponEntity.set<BolasInfoComponent>(bdata->bolasComponent);
+		auto bolas = weaponEntity.get_mut<BolasInfoComponent>();
 		BolasInfoComponent cmp = bdata->bolasComponent;
 		*bolas = cmp;
 	}
+	wep.particle = driver->getTexture(data->weaponEffect.c_str());
+	assets->setTextureAsset(data->weaponEffect, wep.particle);
 
-	wep->particle = driver->getTexture(data->weaponEffect.c_str());
-
+	weaponEntity.set<WeaponInfoComponent>(wep);
+	weaponEntity.set<IrrlichtComponent>(irr);
 	return true; 
 }
+
 u32 loadObstacleData(std::string path, gvReader& in)
 {
 	std::cout << "Reading obstacle in from " << path << "... ";
@@ -371,34 +476,34 @@ u32 loadObstacleData(std::string path, gvReader& in)
 	}
 	data->type = obstacleStrings.at(in.values["type"]);
 
-	stateController->obstacleData[id] = data;
+	obstacleData[id] = data;
 	std::cout << "Done.\n";
 	return id;
 }
 
 bool loadObstacle(u32 id, flecs::entity entity)
 {
-	ObstacleData* data = stateController->obstacleData[id];
+	ObstacleData* data = obstacleData[id];
 	if (!data) return false;
 
-	auto obst = entity.get_mut<ObstacleComponent>();
-	obst->type = data->type;
+	ObstacleComponent obst;
+	obst.type = data->type;
 
-	auto irr = entity.get_mut<IrrlichtComponent>();
-	irr->name = data->name;
+	IrrlichtComponent irr;
+	irr.name = data->name;
 
 	IMesh* mesh = nullptr;
 
 	if (data->obstacleMesh != "") {
-		mesh = stateController->assets.getMeshAsset(data->name);
+		mesh = assets->getMeshAsset(data->name);
 		if (!mesh) {
 			auto initmesh = smgr->getMesh(data->obstacleMesh.c_str());
 			mesh = smgr->getMeshManipulator()->createMeshWithTangents(initmesh);
 			smgr->getMeshCache()->removeMesh(initmesh);
-			stateController->assets.setMeshAsset(data->name, mesh);
+			assets->setMeshAsset(data->name, mesh);
 		}
 	}
-	ITexture* tex = stateController->assets.getTextureAsset(data->name);
+	ITexture* tex = assets->getTextureAsset(data->name);
 	ITexture* norm = nullptr;
 	if (data->obstacleNorm != "") {
 		norm = driver->getTexture(data->obstacleNorm.c_str());
@@ -406,12 +511,12 @@ bool loadObstacle(u32 id, flecs::entity entity)
 
 	if (!tex) {
 		tex = driver->getTexture(data->obstacleTexture.c_str());
-		stateController->assets.setTextureAsset(data->name, tex);
+		assets->setTextureAsset(data->name, tex);
 	}
 
-	if (obst->type == GAS_CLOUD) {
+	if (obst.type == GAS_CLOUD) {
 		auto ps = smgr->addParticleSystemSceneNode();
-		irr->node = ps;
+		irr.node = ps;
 		IParticleAffector* paf = ps->createFadeOutParticleAffector();
 		ps->addAffector(paf);
 		paf->drop();
@@ -421,15 +526,18 @@ bool loadObstacle(u32 id, flecs::entity entity)
 		ps->setMaterialType(EMT_TRANSPARENT_ADD_COLOR);
 	}
 	else {
-		irr->node = smgr->addMeshSceneNode(mesh);
-		irr->node->setMaterialTexture(0, tex);
+		irr.node = smgr->addMeshSceneNode(mesh);
+		irr.node->setMaterialTexture(0, tex);
 		if (norm) {
-			irr->node->setMaterialTexture(1, norm);
-			irr->node->setMaterialType(EMT_PARALLAX_MAP_SOLID);
+			irr.node->setMaterialTexture(1, norm);
+			irr.node->setMaterialType(EMT_PARALLAX_MAP_SOLID);
 		}
 	}
-	irr->node->setName(idToStr(entity).c_str());
+	irr.node->setName(idToStr(entity).c_str());
 	initializeHealth(entity, data->health);
+
+	entity.set<ObstacleComponent>(obst);
+	entity.set<IrrlichtComponent>(irr);
 	return true;
 }
 
@@ -481,4 +589,28 @@ bool loadHull(std::string path, btConvexHullShape& shape)
 
 	return true;
 	
+}
+
+bool loadWingman(std::string path, WingmanData& data)
+{
+	std::cout << "Reading in wingman data from " << path << "... ";
+	gvReader in;
+	in.read(path);
+	if (in.lines.empty()) {
+		std::cout << "Could not read " << path << "!\n";
+		return false;
+	}
+	in.readLinesToValues();
+	data.id = in.getInt("id");
+	data.description = in.getString("description");
+	data.name = in.getString("name");
+
+	data.ai.aggressiveness = in.getFloat("aggressiveness");
+	data.ai.type = aiTypeStrings.at(in.getString("type"));
+	data.ai.aim = in.getFloat("aim");
+	data.ai.cowardice = in.getFloat("cowardice");
+	data.ai.reactionSpeed = in.getFloat("reactionSpeed");
+
+	std::cout << "Done.\n";
+	return true;
 }

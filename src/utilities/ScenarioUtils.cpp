@@ -4,24 +4,22 @@
 #include "LoadoutData.h"
 #include "ShipUtils.h"
 
-Scenario randomScenario(bool scramble)
+Scenario randomScenario(SECTOR_TYPE env, bool scramble)
 {
 	gvReader in;
 	in.read("attributes/scenarios/scenariodesc.gdat");
 	in.readLinesToValues();
 	SCENARIO_TYPE type = static_cast<SCENARIO_TYPE>(std::rand() % SCENARIO_MAX_TYPES);
 	if (type == SCENARIO_MAX_TYPES) type = SCENARIO_KILL_HOSTILES;
-	SCENARIO_ENVIRONMENT env = static_cast<SCENARIO_ENVIRONMENT>(std::rand() % SCENENV_MAX_ENVIRONMENTS);
-	if (env == SCENENV_MAX_ENVIRONMENTS) env = SCENENV_ASTEROID_FIELD;
 
 	if (scramble) type = SCENARIO_SCRAMBLE;
 
 	std::string location = scenarioEnvStrings.at(env);
-	std::string description = in.values[location];
+	std::string description = in.getString(location);
 	description += "\n";
 	description += in.values[scenarioStrings.at(type)];
-	u32 objCount = std::rand() % (stateController->campaign.currentDifficulty * 3) + 1;
-	if (objCount > SCENARIO_MAX_OBJECTIVES) objCount == SCENARIO_MAX_OBJECTIVES;
+	u32 objCount = std::rand() % ((campaign->getDifficulty() * 3) + 1);
+	if (objCount > SCENARIO_MAX_OBJECTIVES) objCount = SCENARIO_MAX_OBJECTIVES;
 
 	if (scramble) objCount = 1; //being the single carrier needed to be taken out
 
@@ -30,35 +28,34 @@ Scenario randomScenario(bool scramble)
 	Scenario scen(type, env, objCount, player, enemy);
 
 	in.clear();
-	std::string path = "attributes/scenarios/environments/" + location + ".gdat";
+	std::string path = "attributes/scenarios/objectives/" + scenarioStrings.at(type) + ".gdat";
 	in.read(path);
 	in.readLinesToValues();
-	scen.detectionChance = in.getInt("detectionChance") + (1*std::rand() % stateController->campaign.currentDifficulty);
+	scen.ammoRecovered += in.getUint("ammoRecovered") * (1 + std::rand() % campaign->getDifficulty());
+	scen.resourcesRecovered += in.getFloat("resourcesRecovered") * static_cast<f32>(std::rand() % campaign->getDifficulty());
+	scen.maxWepsRecovered += in.getInt("maxWeaponsRecovered");
+	scen.maxShipsRecovered += in.getInt("maxShipsRecovered");
+
+	path = "attributes/scenarios/environments/" + location + ".gdat";
+	in.read(path);
+	in.readLinesToValues();
+	scen.detectionChance = in.getInt("detectionChance") + (1 * std::rand() % campaign->getDifficulty());
 	if (scramble) scen.detectionChance = 0; //The man has already got you.
-	scen.ammoRecovered = in.getInt("ammoRecovered") * (1 * std::rand() % stateController->campaign.currentDifficulty);
+	scen.ammoRecovered = in.getInt("ammoRecovered") * (1 * std::rand() % campaign->getDifficulty());
 	scen.resourcesRecovered = in.getFloat("resourcesRecovered");
 	scen.maxWepsRecovered = in.getInt("maxWeaponsRecovered");
 	scen.maxShipsRecovered = in.getInt("maxShipsRecovered");
 
-	in.clear();
-	path = "attributes/scenarios/objectives/" + scenarioStrings.at(type) + ".gdat";
-	in.read(path);
-	in.readLinesToValues();
-	scen.ammoRecovered += in.getUint("ammoRecovered") * (1 + std::rand() % stateController->campaign.currentDifficulty);
-	scen.resourcesRecovered += in.getFloat("resourcesRecovered") * static_cast<f32>(std::rand() % stateController->campaign.currentDifficulty);
-	scen.maxWepsRecovered += in.getInt("maxWeaponsRecovered");
-	scen.maxShipsRecovered += in.getInt("maxShipsRecovered");
+	setObstaclePositions(scen);
 
-	if(env != SCENENV_EMPTY) setObstaclePositions(scen);
-
-	scen.location = location;
+	scen.location = in.getString("name");
 	scen.description = description;
 	return scen;
 }
 
-Scenario scrambleScenario() //for convenience
+Scenario scrambleScenario(SECTOR_TYPE env) //for convenience
 {
-	return randomScenario(true);
+	return randomScenario(env, true);
 }
 
 void buildScenario(Scenario& scenario)
@@ -68,6 +65,13 @@ void buildScenario(Scenario& scenario)
 	n->setID(ID_IsNotSelectable);
 
 	flecs::entity player = createPlayerShipFromInstance(scenario.playerStartPos, vector3df(0, 0, 0));
+	vector3df wingpos = scenario.playerStartPos;
+	for (u32 i = 0; i < 3; ++i) {
+		if (!campaign->getAssignedWingman(i) || !campaign->getAssignedShip(i)) continue;
+		wingpos.X += 15.f;
+		flecs::entity wingman = createWingmanFromInstance(i, player, wingpos, vector3df(0, 0, 0));
+	}
+
 	cullStartPosObstacleLocations(scenario);
 
 	setScenarioType(scenario);
@@ -83,13 +87,13 @@ void setEnvironment(Scenario& scenario)
 {
 	std::cout << "Setting environment... \n";
 	switch (scenario.environment) {
-	case SCENENV_ASTEROID_FIELD:
+	case SECTOR_ASTEROID:
 		buildAsteroidField(scenario);
 		break;
-	case SCENENV_GAS_FIELD:
+	case SECTOR_GAS:
 		buildGasField(scenario);
 		break;
-	case SCENENV_DEBRIS_FIELD:
+	case SECTOR_DEBRIS:
 		buildDebrisField(scenario);
 		break;
 	default:
@@ -110,6 +114,7 @@ void setScenarioType(Scenario& scenario)
 		break;
 	case SCENARIO_DESTROY_OBJECT:
 		setScrambleScenario(scenario); //the object in this case will currently be a carrier
+		break;
 	default:
 		std::cout << "No valid type! Defaulting to kill hostiles. \n";
 		setKillHostilesScenario(scenario);
@@ -152,7 +157,9 @@ void buildAsteroidField(Scenario& scenario)
 	for (u32 i = 0; i < scenario.obstaclePositions.size(); ++i) {
 		u32 scale = std::rand() % 100;
 		f32 mass = (f32)scale / 5.f;
-		flecs::entity rock = createAsteroid(scenario.obstaclePositions[i], randomRotationVector(), vector3df(scale, scale, scale), mass);
+		u32 roll = std::rand() % 10;
+		if(roll==9) createExplosiveAsteroid(scenario.obstaclePositions[i], randomRotationVector(), vector3df(scale, scale, scale), mass);
+		else createAsteroid(scenario.obstaclePositions[i], randomRotationVector(), vector3df(scale, scale, scale), mass);
 	}
 	std::cout << "Done.\n";
 }
@@ -199,11 +206,16 @@ void cullStartPosObstacleLocations(Scenario& scenario)
 void setKillHostilesScenario(Scenario& scenario)
 {
 	std::cout << "Setting up hostiles... ";
+	flecs::entity cdr = createAceAIShip(scenario.enemyStartPos, vector3df(0, 0, 0));
+	ObjectiveComponent obj;
+	obj.type = OBJ_DESTROY;
+	cdr.set<ObjectiveComponent>(obj);
 	for (u32 i = 0; i < scenario.objectiveCount; ++i) {
 		vector3df pos = getPointInSphere(scenario.enemyStartPos, 25.f);
 		flecs::entity enemy = createDefaultAIShip(pos, vector3df(0, 180, 0)); //todo: create AI ship generator that pulls from loaded ships
-		auto obj = enemy.get_mut<ObjectiveComponent>();
-		obj->type = OBJ_DESTROY;
+		auto ai = enemy.get_mut<AIComponent>();
+		ai->wingCommander = cdr;
+		enemy.set<ObjectiveComponent>(obj);
 	}
 	std::cout << "Done. \n";
 }
@@ -212,9 +224,10 @@ void setScrambleScenario(Scenario& scenario)
 {
 	std::cout << "Setting up a scramble...";
 	scenario.enemyStartPos.Z += 400;
-	auto carr = createAlienCarrier(1, scenario.enemyStartPos, vector3df(0, 90, 0));
-	auto obj = carr.get_mut<ObjectiveComponent>();
-	obj->type = OBJ_DESTROY;
+	auto carr = createAlienCarrier(1, scenario.enemyStartPos, vector3df(0, 0, 0));
+	ObjectiveComponent obj;
+	obj.type = OBJ_DESTROY;
+	carr.set<ObjectiveComponent>(obj);
 	std::cout << "Done.\n";
 }
 

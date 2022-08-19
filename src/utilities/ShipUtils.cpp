@@ -9,25 +9,23 @@ flecs::entity createShipFromId(u32 id, vector3df position, vector3df rotation)
 	auto shipEntity = game_world->entity();
 	loadShip(id, shipEntity);
 	if (!shipEntity.has<ShipComponent>() || !shipEntity.has<IrrlichtComponent>()) return INVALID_ENTITY;
-	auto ship = shipEntity.get_mut<ShipComponent>();
+
 	auto irr = shipEntity.get_mut<IrrlichtComponent>();
 
 	irr->node->setPosition(position);
 	irr->node->setRotation(rotation);
-	for (u32 i = 0; i < MAX_HARDPOINTS; ++i) {
-		ship->weapons[i] = INVALID_ENTITY;
-	}
 
 	initializeShipParticles(shipEntity);
+	gameController->registerDeathCallback(shipEntity, fighterDeathExplosionCallback);
 	return shipEntity;
 }
 
 flecs::entity createDefaultShip(vector3df position, vector3df rotation)
 {
 	flecs::entity shipEntity = createShipFromId(1, position, rotation);
-	auto ship = shipEntity.get_mut<ShipComponent>();
+	auto hards = shipEntity.get_mut<HardpointComponent>();
 
-	for (unsigned int i = 0; i < ship->hardpointCount; ++i) {
+	for (unsigned int i = 0; i < hards->hardpointCount; ++i) {
 		initializeDefaultWeapon(shipEntity, i);
 	}
 	return shipEntity;
@@ -47,6 +45,16 @@ flecs::entity createDefaultAIShip(vector3df position, vector3df rotation)
 
 	return id;
 }
+flecs::entity createAceAIShip(vector3df position, vector3df rotation)
+{
+	auto id = createDefaultAIShip(position, rotation);
+	auto irr = id.get_mut<IrrlichtComponent>();
+	irr->name = "Ace AI Ship";
+	initializeHealth(id, 130.f);
+	initializeShields(id, 125.f, 4.f, 12.f);
+	initializeAceAI(id);
+	return id;
+}
 
 bool initializeShipCollisionBody(flecs::entity entityId, u32 shipId, bool carrier)
 {
@@ -55,37 +63,38 @@ bool initializeShipCollisionBody(flecs::entity entityId, u32 shipId, bool carrie
 
 	btVector3 scale(1.f, 1.f, 1.f);
 	btScalar mass = 1.f;
-	btConvexHullShape hull = stateController->shipData[shipId]->collisionShape;
+	btConvexHullShape hull = shipData[shipId]->collisionShape;
 	if (carrier) {
-		hull = stateController->carrierData[shipId]->collisionShape;
-		CarrierData* data = stateController->carrierData[shipId];
+		hull = carrierData[shipId]->collisionShape;
+		CarrierData* data = carrierData[shipId];
 		scale = irrVecToBt(data->carrierComponent.scale);
 		mass = data->mass;
 	}
-	return initializeBtRigidBody(entityId, hull, scale, mass);
+	return initializeBtConvexHull(entityId, hull, scale, mass);
 }
 
 bool initializeWeaponFromId(u32 id, flecs::entity shipId, int hardpoint, bool phys)
 {
-	if (id <= 0) return false;
-
-	if (!shipId.has<ShipComponent>() || !shipId.has<IrrlichtComponent>()) return false;
+	if (id <= 0) {
+		return false;
+	}
+	if (!shipId.has<HardpointComponent>() || !shipId.has<IrrlichtComponent>()) return false;
 
 	auto shipIrr = shipId.get<IrrlichtComponent>();
-	auto shipComp = shipId.get_mut<ShipComponent>();
+	auto hards = shipId.get_mut<HardpointComponent>();
 
-	auto wepEntity = game_world->entity().child_of(shipId);
+	auto wepEntity = game_world->entity().child_of(shipId); //creates a weapon entity that is a child of the ship entity
 
-	loadWeapon(id, wepEntity, shipId, phys);
+	loadWeapon(id, wepEntity, phys);
 	auto irr = wepEntity.get_mut<IrrlichtComponent>();
 	irr->node->setParent(shipIrr->node);
 	if (!phys) {
-		irr->node->setPosition(shipComp->hardpoints[hardpoint]);
-		shipComp->weapons[hardpoint] = wepEntity;
+		irr->node->setPosition(hards->hardpoints[hardpoint]);
+		hards->weapons[hardpoint] = wepEntity;
 	}
 	else {
-		irr->node->setPosition(shipComp->physWeaponHardpoint);
-		shipComp->physWeapon = wepEntity;
+		irr->node->setPosition(hards->physWeaponHardpoint);
+		hards->physWeapon = wepEntity;
 	}
 	irr->node->setScale(vector3df(.5f, .5f, .5f));
 
@@ -99,8 +108,9 @@ bool initializeDefaultWeapon(flecs::entity shipId, int hardpoint)
 
 void initializeFaction(flecs::entity id, FACTION_TYPE type, u32 hostiles, u32 friendlies)
 {
-	auto fac = id.get_mut<FactionComponent>();
-	setFaction(fac, type, hostiles, friendlies);
+	FactionComponent fac;
+	setFaction(&fac, type, hostiles, friendlies);
+	id.set<FactionComponent>(fac);
 }
 
 void setFaction(FactionComponent* fac, FACTION_TYPE type, unsigned int hostilities, unsigned int friendlies)
@@ -128,19 +138,20 @@ bool initializeSensors(flecs::entity id, f32 range, f32 updateInterval)
 {
 	//Faction component and rigid body component are both REQUIRED for sensors (the one for hostiles, the other for positioning).
 	if (!id.has<BulletRigidBodyComponent>() || !id.has<FactionComponent>()) return false;
-	auto sensors = id.get_mut<SensorComponent>();
-	sensors->detectionRadius = range;
+	SensorComponent sensors;
+	sensors.detectionRadius = range;
 
-	sensors->closestContact = INVALID_ENTITY;
-	sensors->closestFriendlyContact = INVALID_ENTITY;
-	sensors->closestHostileContact = INVALID_ENTITY;
-	sensors->targetContact = INVALID_ENTITY;
-	sensors->timeSelected = 0;
+	sensors.closestContact = INVALID_ENTITY;
+	sensors.closestFriendlyContact = INVALID_ENTITY;
+	sensors.closestHostileContact = INVALID_ENTITY;
+	sensors.targetContact = INVALID_ENTITY;
+	sensors.timeSelected = 0;
 
-	sensors->updateInterval = updateInterval;
+	sensors.updateInterval = updateInterval;
 	f32 start = 10.f / (f32)(std::rand() % 100);
-	sensors->timeSinceLastUpdate = start; //stagger sensor updates so it doesn't all happen at once
+	sensors.timeSinceLastUpdate = start; //stagger sensor updates so it doesn't all happen at once
 
+	id.set<SensorComponent>(sensors);
 	return true;
 }
 bool initializeDefaultSensors(flecs::entity id)
@@ -150,12 +161,13 @@ bool initializeDefaultSensors(flecs::entity id)
 
 void initializeShields(flecs::entity id, f32 amount, f32 delay, f32 recharge)
 {
-	auto shields = id.get_mut<ShieldComponent>();
-	shields->shields = amount;
-	shields->maxShields = amount;
-	shields->rechargeDelay = delay;
-	shields->rechargeRate = recharge;
-	shields->timeSinceLastHit = shields->rechargeDelay;
+	ShieldComponent shields;
+	shields.shields = amount;
+	shields.maxShields = amount;
+	shields.rechargeDelay = delay;
+	shields.rechargeRate = recharge;
+	shields.timeSinceLastHit = shields.rechargeDelay;
+	id.set<ShieldComponent>(shields);
 }
 void initializeDefaultShields(flecs::entity objectId)
 {
@@ -180,14 +192,15 @@ IParticleSystemSceneNode* createShipJet(ISceneNode* node, vector3df pos, vector3
 	paf->drop();
 	ps->setMaterialFlag(EMF_LIGHTING, false);
 	ps->setMaterialFlag(EMF_ZWRITE_ENABLE, false);
-	ps->setMaterialTexture(0, stateController->assets.getTextureAsset("defaultJetTexture"));
+	ps->setMaterialTexture(0, assets->getTextureAsset("defaultJetTexture"));
 	ps->setMaterialType(EMT_TRANSPARENT_ADD_COLOR);
 
 	return ps;
 }
 void initializeShipParticles(flecs::entity id)
 {
-	auto particles = id.get_mut<ShipParticleComponent>(); // this should assign the particle component
+	ShipParticleComponent parc;
+	auto particles = &parc; // this should assign the particle component
 	auto ship = id.get<ShipComponent>();
 	auto irr = id.get<IrrlichtComponent>();
 
@@ -223,6 +236,8 @@ void initializeShipParticles(flecs::entity id)
 	auto engine = smgr->addLightSceneNode(irr->node, ship->engineJetPos, SColorf(0.f, 1.f, 0.f), 1.3f);
 	particles->engineLight = engine;
 	engine->setID(ID_IsNotSelectable);
+
+	id.set<ShipParticleComponent>(parc);
 }
 
 flecs::entity createShipFromInstance(ShipInstance& inst, vector3df pos, vector3df rot)
@@ -230,15 +245,16 @@ flecs::entity createShipFromInstance(ShipInstance& inst, vector3df pos, vector3d
 	auto id = createShipFromId(inst.ship.shipDataId, pos, rot);
 	if (id == INVALID_ENTITY) return id;
 	ShipComponent* ship = id.get_mut<ShipComponent>();
+	HardpointComponent* hards = id.get_mut<HardpointComponent>();
 	*ship = inst.ship;
-	for (u32 i = 0; i < ship->hardpointCount; ++i) {
-		WeaponInfoComponent wepReplace = inst.weps[i];
+	for (u32 i = 0; i < hards->hardpointCount; ++i) {
+		if (!inst.weps[i]) continue;
+
+		WeaponInfoComponent wepReplace = inst.weps[i]->wep;
 		initializeWeaponFromId(wepReplace.wepDataId, id, i);
-		if (wepReplace.type != WEP_NONE) {
-			WeaponInfoComponent* wep = ship->weapons[i].get_mut<WeaponInfoComponent>(); 
-			if (wep) {
-				wep->ammunition = wepReplace.ammunition;
-			}
+		WeaponInfoComponent* wep = hards->weapons[i].get_mut<WeaponInfoComponent>();
+		if (wepReplace.type != WEP_NONE && wep) {
+			wep->ammunition = wepReplace.ammunition;
 		}
 	}
 	initializeDefaultHealth(id);
@@ -246,10 +262,11 @@ flecs::entity createShipFromInstance(ShipInstance& inst, vector3df pos, vector3d
 	*hp = inst.hp;
 	initializeShipCollisionBody(id, inst.ship.shipDataId);
 
-	initializeWeaponFromId(inst.physWep.wepDataId, id, 0, true);
+	if(inst.physWep) initializeWeaponFromId(inst.physWep->wep.wepDataId, id, 0, true);
 
 	return id;
 }
+
 flecs::entity createAIShipFromInstance(ShipInstance& inst, vector3df pos, vector3df rot)
 {
 	auto id = createShipFromInstance(inst, pos, rot);
@@ -285,8 +302,7 @@ flecs::entity carrierSpawnShip(ShipInstance& inst, vector3df spawnPos, vector3df
 {
 	auto id = createAIShipFromInstance(inst, spawnPos, spawnPos);
 	if (id == INVALID_ENTITY) return id;
-	auto fac = id.get_mut<FactionComponent>();
-	*fac = *carrFac;
+	id.set<FactionComponent>(*carrFac);
 	auto obj = id.get_mut<ObjectiveComponent>();
 	obj->type = OBJ_DESTROY;
 	return id;
@@ -294,14 +310,48 @@ flecs::entity carrierSpawnShip(ShipInstance& inst, vector3df spawnPos, vector3df
 
 flecs::entity createPlayerShipFromInstance(vector3df pos, vector3df rot)
 {
-	ShipInstance inst = stateController->campaign.playerShip;
-	u32 shipId = inst.ship.shipDataId;
+	ShipInstance* inst = campaign->getPlayerShip();
+	u32 shipId = inst->ship.shipDataId;
 
-	auto id = createShipFromInstance(inst, pos, rot);
+	auto id = createShipFromInstance(*inst, pos, rot);
 	initializeDefaultPlayer(id);
-	initializeNeutralFaction(id);
+	initializePlayerFaction(id);
 	initializeDefaultShields(id);
 	initializeDefaultSensors(id);
 	initializeDefaultHUD(id);
+	auto ship = id.get<ShipComponent>();
+
 	return id;
+}
+
+flecs::entity createWingmanFromInstance(u32 num, flecs::entity player, vector3df pos, vector3df rot)
+{
+	if (!campaign->getWingman(num) || !campaign->getAssignedShip(num)) return INVALID_ENTITY;
+	auto wingData = campaign->getWingman(num);
+	auto id = createShipFromInstance(*wingData->assignedShip, pos, rot);
+	if (id == INVALID_ENTITY) return id;
+	auto irr = id.get_mut<IrrlichtComponent>(id);
+	irr->name = wingData->name;
+	initializeDefaultShields(id);
+	initializePlayerFaction(id);
+	initializeDefaultSensors(id);
+	auto ai = wingData->ai;
+	ai.aiControls = new AceAI;
+	ai.wingCommander = player;
+	id.set<AIComponent>(ai);
+
+	return id;
+}
+
+void fighterDeathExplosionCallback(flecs::entity id)
+{
+	if (!id.is_alive()) return;
+
+	auto irr = id.get<IrrlichtComponent>();
+	vector3df pos = irr->node->getAbsolutePosition();
+	vector3df scale = irr->node->getScale();
+	f32 avgscale = (scale.X + scale.Y + scale.Z);
+	f32 rad = irr->node->getBoundingBox().getExtent().getLength() * avgscale;
+	auto explosion = explode(pos, 3.f, avgscale, rad, 40.f, 300.f);
+	audioDriver->playGameSound(explosion, "death_explosion_fighter.ogg");
 }

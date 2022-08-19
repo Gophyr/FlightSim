@@ -7,23 +7,23 @@
 
 HUDResources::HUDResources(IGUIElement* root, flecs::entity id) : HUDElement(root)
 {
-	IGUIFont* fnt = stateController->assets.getFontAsset("HUDFont");
+	IGUIFont* fnt = assets->getFontAsset("HUDFont");
 	SColor overrideClr(255, 200, 200, 200);
 	type = HUD_ELEM_TYPE::HEALTH_BAR;
 	rect<s32> screenrect = root->getRelativePosition();
-	health = guienv->addImage(stateController->assets.getHUDAsset("healthbar"), position2di(0, screenrect.getHeight() - 64), root);
+	health = guienv->addImage(assets->getHUDAsset("healthbar"), position2di(0, screenrect.getHeight() - 64), root);
 	healthNum = guienv->addStaticText(L"", rect<s32>(position2di(0, screenrect.getHeight() - 96), dimension2du(300,24)),false, true, root);
-	fuel = guienv->addImage(stateController->assets.getHUDAsset("fuelbar"), position2di(0, screenrect.getHeight() - 160), root);
+	fuel = guienv->addImage(assets->getHUDAsset("fuelbar"), position2di(0, screenrect.getHeight() - 160), root);
 	fuelNum = guienv->addStaticText(L"", rect<s32>(position2di(0, screenrect.getHeight() - 192), dimension2du(300, 24)), false, true, root);
-	shield = guienv->addImage(stateController->assets.getHUDAsset("velocitybar"), position2di(300, screenrect.getHeight() - 64), root);
+	shield = guienv->addImage(assets->getHUDAsset("velocitybar"), position2di(300, screenrect.getHeight() - 64), root);
 	shieldNum = guienv->addStaticText(L"", rect<s32>(position2di(300, screenrect.getHeight() - 96), dimension2du(300, 24)), false, true, root);
 
-	auto shipInfo = id.get<ShipComponent>();
+	auto hards = id.get<HardpointComponent>();
 
-	for (u32 i = 0; i < shipInfo->hardpointCount; ++i) {
-		if (!shipInfo->weapons[i].is_alive()) continue;
+	for (u32 i = 0; i < hards->hardpointCount; ++i) {
+		if (!hards->weapons[i].is_alive()) continue;
 
-		auto wepInfo = shipInfo->weapons[i].get<WeaponInfoComponent>();
+		auto wepInfo = hards->weapons[i].get<WeaponInfoComponent>();
 		if (!wepInfo->usesAmmunition) continue;
 		ammoNums[i] = guienv->addStaticText(L"", rect<s32>(position2di(340, screenrect.getHeight() - 16 * (i + 1)), dimension2du(240, 20)), false, true, root);
 		ammoNums[i]->setOverrideColor(overrideClr);
@@ -67,6 +67,7 @@ void HUDResources::updateElement(flecs::entity playerId)
 	auto shields = playerId.get<ShieldComponent>();
 	auto player = playerId.get<PlayerComponent>();
 	auto ship = playerId.get<ShipComponent>();
+	auto hards = playerId.get<HardpointComponent>();
 
 	std::string hp = fprecis(hpcomp->health, 5);
 	std::string maxhp = fprecis(hpcomp->maxHealth, 5);
@@ -93,7 +94,7 @@ void HUDResources::updateElement(flecs::entity playerId)
 
 	for (u32 i = 0; i < MAX_HARDPOINTS; ++i) {
 		if (!ammoNums[i]) continue;
-		auto wepInfo = ship->weapons[i].get<WeaponInfoComponent>();
+		auto wepInfo = hards->weapons[i].get<WeaponInfoComponent>();
 		if (!wepInfo) continue;
 		if (!wepInfo->usesAmmunition) continue;
 

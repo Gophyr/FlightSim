@@ -9,6 +9,8 @@
 #include "LoadoutData.h"
 #include "GameAssets.h"
 #include "Campaign.h"
+#include "Dialogue.h"
+#include "AudioDriver.h"
 #include <filesystem>
 
 /*
@@ -50,27 +52,14 @@ class GameStateController : public IEventReceiver
 
 		VideoConfig videoConfig;
 
-		u32 playerShip;
-		u32 playerWeapons[MAX_HARDPOINTS];
-		u32 playerPhysWeapon;
-
 		void loadShipAndWeaponData();
-		std::unordered_map<u32, ShipData*> shipData;
-		std::unordered_map<u32, CarrierData*> carrierData;
-		std::unordered_map<u32, WeaponData*> weaponData;
-		std::unordered_map<u32, WeaponData*> physWeaponData;
-		std::unordered_map<u32, ObstacleData*> obstacleData;
-		Assets assets;
 
-		Campaign campaign;
 		bool inCampaign;
 		void backToCampaign();
-		void changeMusic(ISoundSource* newSource);
 #if _DEBUG
 		void addDebugLine(line3df line) { debugLines.push_back(line); }
 #endif 
 	private:
-		ISound* currentMusic;
 		f32 musicVolume = .3f; //change this later to be adjustable
 		f32 musicTimer;
 		void stateChange();

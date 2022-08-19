@@ -4,7 +4,7 @@
 
 GameStateController::GameStateController(VideoConfig vconf)
 {
-	std::srand(time(NULL));
+	std::srand((u32)time(NULL));
 	gameInitialized = false;
 	videoConfig = vconf;
 }
@@ -19,35 +19,30 @@ void GameStateController::init()
 	driver->setMinHardwareBufferVertexCount(0);
 	driver->setTextureCreationFlag(ETCF_ALWAYS_32_BIT, true);
 
-	playerShip = 0;
-	playerWeapons[0] = 3;
-	playerWeapons[1] = 3;
-	for (int i = 2; i < MAX_HARDPOINTS; ++i) {
-		playerWeapons[i] = WEAPONID_INVALID;
-	}
-	playerPhysWeapon = 1;
-
 	loadShipAndWeaponData();
-	soundEngine = createIrrKlangDevice();
+	assets->setFilenames();
 
-	assets.setFilenames();
-
-	changeMusic(assets.getSoundAsset("menuMusic"));
+	audioDriver->playMusic("main_menu.ogg");
 
 	gameController = new GameController;
 
 	guiController = new GuiController;
 	guiController->init();
 
-	IGUIFont* defaultFont = assets.getFontAsset("defaultFont");
+	IGUIFont* defaultFont = assets->getFontAsset("defaultFont");
 	if (defaultFont) {
 		guienv->getSkin()->setFont(defaultFont);
 	}
-	IGUIFont* tooltipDefaultFont = assets.getFontAsset("defaultTooltipFont");
+	IGUIFont* tooltipDefaultFont = assets->getFontAsset("defaultTooltipFont");
 	if (tooltipDefaultFont) {
 		guienv->getSkin()->setFont(tooltipDefaultFont, EGDF_TOOLTIP);
 	}
 	guienv->getSkin()->setColor(EGDC_BUTTON_TEXT, SColor(255, 140, 250, 255));
+
+	//testing out XML reader...
+	//DialogueTree testTree("dialogue/testdialogue.xml");
+	//testTree.print();
+
 	std::cout << "Game initialized!\n";
 	gameInitialized = true;
 }
@@ -60,6 +55,7 @@ void GameStateController::loadShipAndWeaponData()
 	std::string hullpath = basepath + "hulls/";
 	std::string obstpath = basepath + "obstacles/";
 	std::string carrierpath = basepath + "carriers/";
+	std::string turretpath = basepath + "turrets/";
 
 	gvReader in;
 	std::cout << "Loading ships... \n";
@@ -103,7 +99,12 @@ void GameStateController::loadShipAndWeaponData()
 			}
 		}
 	}
-	std::cout << "Done loading carriers. \nLoading weapons... \n";
+	std::cout << "Done loading carriers. \nLoading turrets... \n";
+	for (const auto& file : std::filesystem::directory_iterator(turretpath)) {
+		loadTurretData(file.path().string(), in);
+		in.clear();
+	}
+	std::cout << "Done loading turrets. \nLoading weapons... \n";
 	for (const auto& file : std::filesystem::directory_iterator(weaponpath)) {
 		loadWeaponData(file.path().string(), in);
 		in.clear();
@@ -133,6 +134,9 @@ void GameStateController::loadShipAndWeaponData()
 	std::cout << "Number of weapons: " << weaponData.size() << std::endl;
 	std::cout << "Number of physics weapons: " << physWeaponData.size() << std::endl;
 	std::cout << "Number of ships: " << shipData.size() << std::endl;
+	std::cout << "Number of obstacle types: " << obstacleData.size() << std::endl;
+	std::cout << "Number of turrets: " << turretData.size() << std::endl;
+	std::cout << "Number of carriers: " << carrierData.size() << std::endl;
 }
 
 bool GameStateController::OnEvent(const SEvent& event)
@@ -175,27 +179,10 @@ void GameStateController::setState(GAME_STATE newState)
 
 void GameStateController::backToCampaign()
 {
-	campaign.playerShip = getEndScenarioData();
-	++campaign.currentDifficulty;
-	campaign.moved = false;
-	for (u32 i = 0; i < NUM_SCENARIO_OPTIONS; ++i) {
-		campaign.possibleScenarios[i] = randomScenario();
-	}
+	audioDriver->cleanupGameSounds();
+	campaign->getSector()->finishScenario();
 	returningToCampaign = true;
 	setState(GAME_MENUS);
-}
-
-void GameStateController::changeMusic(ISoundSource* newSource)
-{
-	if (currentMusic) {
-		currentMusic->stop();
-		currentMusic->drop();
-	}
-	currentMusic = soundEngine->play2D(newSource, true, true, true);
-	if (currentMusic) {
-		currentMusic->setVolume(musicVolume);
-		currentMusic->setIsPaused(false);
-	}
 }
 
 void GameStateController::stateChange() //Messy handler for the different states; since there aren't many it's just an if chain
@@ -204,7 +191,6 @@ void GameStateController::stateChange() //Messy handler for the different states
 		guiController->close();
 		gameController->init();
 		gameController->initScenario();
-		//gameController->initDefaultScene();
 	}
 	else if (oldState == GAME_PAUSED && state == GAME_MENUS) {
 		gameController->close();
@@ -236,6 +222,7 @@ void GameStateController::mainLoop()
 {
 	u32 lastFPS = -1;
 	while (device->run()) {
+		//audioDriver->audioUpdate();
 		if (stateChangeCalled) {
 			stateChange(); //Updates state if the change has been called by one of the controllers
 		}

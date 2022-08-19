@@ -13,7 +13,7 @@ void projectileCollider(flecs::entity projectile, flecs::entity impacted)
 
 	handleProjectileImpact(projectile, impacted);
 	if (dmg) dmg->registerDamageInstance(DamageInstance(projectile, impacted, proj->dmgtype, proj->damage, device->getTimer()->getTime()));
-	createProjectileImpactEffect(irr->node->getPosition(), .2f);
+	if(irr) createProjectileImpactEffect(irr->node->getPosition(), .2f);
 	destroyProjectile(projectile);
 }
 
@@ -24,16 +24,16 @@ void collisionDamage(flecs::entity A, flecs::entity B)
 	auto rbcA = A.get<BulletRigidBodyComponent>();
 	auto rbcB = B.get<BulletRigidBodyComponent>();
 
-	btScalar velA = rbcA->rigidBody.getLinearVelocity().length2();
-	btScalar velB = rbcB->rigidBody.getLinearVelocity().length2();
+	btScalar velA = rbcA->rigidBody->getLinearVelocity().length2();
+	btScalar velB = rbcB->rigidBody->getLinearVelocity().length2();
 	btScalar kinetic = 0;
 	btScalar minimumVel = 10.f;
 	if (velA < minimumVel || velB < minimumVel) return;
 
 	//Any "static" object would have a mass of 0, and would have 0 velocity, so in both cases the static
 	//object should never be applying the damage.
-	if (velA >= velB) kinetic = (velA * rbcA->rigidBody.getMass()) / 2;
-	else kinetic = (velB * rbcB->rigidBody.getMass()) / 2;
+	if (velA >= velB) kinetic = (velA * rbcA->rigidBody->getMass()) / 2;
+	else kinetic = (velB * rbcB->rigidBody->getMass()) / 2;
 
 	//balancing for later
 	kinetic = kinetic / 8000.f;
@@ -61,7 +61,8 @@ void collisionCheckingSystem(flecs::iter it)
 
 		flecs::entity idA = getIdFromBt(objA);
 		flecs::entity idB = getIdFromBt(objB);
-		if (!idA.is_alive()|| !idB.is_alive()) return;
+		if (!idA.is_alive() || !idB.is_alive()) return;
+
 		bool projA = idA.has<ProjectileInfoComponent>();
 		bool projB = idB.has<ProjectileInfoComponent>();
 
@@ -99,26 +100,17 @@ bool broadCallback::needBroadphaseCollision(btBroadphaseProxy* proxy0, btBroadph
 	if (!entityA.is_valid() || !entityB.is_valid()) return true; //something probably went wrong if either of these hits
 	//need to check who "owns" these entities
 
-	if (entityA.get_object<FiredBy>().id() == entityB.get_object<FiredBy>().id()) return false; //if they have the same parent return false
+	auto idFiredA = entityA.get_object<FiredBy>().id();
+	auto idFiredB = entityB.get_object<FiredBy>().id();
+	if (idFiredA != INVALID_ENTITY_ID && idFiredB != INVALID_ENTITY_ID) {
+		if (idFiredA == idFiredB) return false;
+	}
+	if (entityA.has<DoNotCollide>(entityB)) return false;
+	if (entityB.has<DoNotCollide>(entityA)) return false;
 
-	if (entityA.has<ProjectileInfoComponent>() && entityB.has<ProjectileInfoComponent>()) { //if they're both projectiles return false
+	if (entityA.has<ProjectileInfoComponent>() && entityB.has<ProjectileInfoComponent>()) { 
 		return false;
 	}
-
-	//if one is a projectile and the other isn't, needs to check whether it hit its parent - if so throw it out
-	if (entityA.has<ProjectileInfoComponent>() && !entityB.has<ProjectileInfoComponent>()) {
-		return isProjectileHittingParent(entityA, entityB);
-	}
-	if (!entityA.has<ProjectileInfoComponent>() && entityB.has<ProjectileInfoComponent>()) {
-		return isProjectileHittingParent(entityB, entityA);
-	}
-
 	//in all other scenarios return true, we need the collision
-	return true;
-}
-
-bool broadCallback::isProjectileHittingParent(flecs::entity proj, flecs::entity other) const
-{
-	//to-do: set it up so that you can't actually shoot yourself (or maybe leave it as a toggle?)
 	return true;
 }

@@ -9,9 +9,9 @@
 //represented by a component in the Entity-Component system.
 struct BulletRigidBodyComponent
 {
-	btRigidBody rigidBody = btRigidBody(0,0,0,btVector3(0,0,0));
-	btConvexHullShape shape;
-	btSphereShape sphere = btSphereShape(.5f); //used for projectiles
+	btRigidBody* rigidBody;
+	btCollisionShape* shape;
+	BulletRigidBodyComponent() : rigidBody(nullptr), shape(nullptr) {}
 };
 
 #endif

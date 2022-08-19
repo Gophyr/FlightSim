@@ -1,15 +1,14 @@
 #include "btUtils.h"
 #include "GameController.h"
 
-bool initializeBtRigidBody(flecs::entity entityId, btConvexHullShape shape, btVector3& scale, f32 mass)
+bool initBtRBC(flecs::entity id, btCollisionShape* shape, btVector3& scale, f32 mass)
 {
-	if (!entityId.has<IrrlichtComponent>()) return false;
+	if (!id.has<IrrlichtComponent>()) return false;
 
-	auto objIrr = entityId.get<IrrlichtComponent>(entityId);
-
-	BulletRigidBodyComponent* rbc = entityId.get_mut<BulletRigidBodyComponent>();
-	rbc->shape = shape;
-	rbc->shape.setLocalScaling(scale);
+	auto objIrr = id.get<IrrlichtComponent>();
+	BulletRigidBodyComponent rbc;
+	rbc.shape = shape;
+	rbc.shape->setLocalScaling(scale);
 	btTransform transform = btTransform();
 	transform.setIdentity();
 	transform.setOrigin(irrVecToBt(objIrr->node->getPosition()));
@@ -20,15 +19,21 @@ bool initializeBtRigidBody(flecs::entity entityId, btConvexHullShape shape, btVe
 	auto motionState = new btDefaultMotionState(transform);
 
 	btVector3 localInertia;
-	rbc->shape.calculateLocalInertia(mass, localInertia);
-	rbc->rigidBody = btRigidBody(mass, motionState, &rbc->shape, localInertia);
-	rbc->rigidBody.setSleepingThresholds(0, 0);
+	rbc.shape->calculateLocalInertia(mass, localInertia);
+	rbc.rigidBody = new btRigidBody(mass, motionState, rbc.shape, localInertia);
+	rbc.rigidBody->setSleepingThresholds(0, 0);
 
-	setIdOnBtObject(&rbc->rigidBody, entityId);
-
-	bWorld->addRigidBody(&(rbc->rigidBody));
+	setIdOnBtObject(rbc.rigidBody, id);
+	bWorld->addRigidBody(rbc.rigidBody);
+	id.set<BulletRigidBodyComponent>(rbc);
 
 	return true;
+}
+
+bool initializeBtConvexHull(flecs::entity entityId, btConvexHullShape shape, btVector3& scale, f32 mass)
+{
+	auto newShape = new btConvexHullShape(shape);
+	return initBtRBC(entityId, newShape, scale, mass);
 }
 
 flecs::entity getIdFromBt(btCollisionObject* object)

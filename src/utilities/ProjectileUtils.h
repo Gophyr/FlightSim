@@ -10,10 +10,11 @@
 
 //tag for projectiles that have been fired
 struct FiredBy {};
+struct DoNotCollide {};
 
 //Creates a projectile entity and shoots it in the indicated direction. Assigns information to the projectile (range, speed, etc)
 //based on the weapon that shot it. Returns the ID of the projectile.
-flecs::entity createProjectileEntity(vector3df spawnPos, vector3df direction, flecs::entity weaponId);
+flecs::entity createProjectileEntity(vector3df spawnPos, vector3df direction, flecs::entity weaponId, bool turret=false);
 //Removes the given projectile from the scene.
 void destroyProjectile(flecs::entity projectile);
 
@@ -35,5 +36,5 @@ void missileGoTo(flecs::entity id, f32 dt);
 //Convenience function for tacking on a rigid body component to a projectile.
 BulletRigidBodyComponent* addProjectileRBC(flecs::entity id, btVector3& initForce, btVector3& initVelocity, vector3df& spawn, btQuaternion& initRot);
 //Convenience function for tacking on the weapon information to a projectile.
-ProjectileInfoComponent addProjectileInfo(WeaponInfoComponent* wepInfo, vector3df spawnPos);
+ProjectileInfoComponent addProjectileInfo(const WeaponInfoComponent* wepInfo, vector3df spawnPos);
 #endif 

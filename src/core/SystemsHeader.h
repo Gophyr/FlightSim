@@ -9,7 +9,6 @@
 #include "ExplosionSystem.h"
 #include "HealthAndShieldSystems.h"
 #include "IrrlichtRigidBodyPositionSystem.h"
-#include "ObjectiveSystem.h"
 #include "PlayerUpdateSystem.h"
 #include "ProjectileSystem.h"
 #include "SensorUpdateSystem.h"
@@ -17,4 +16,5 @@
 #include "ShipUpdateSystem.h"
 #include "SoundSystem.h"
 #include "WeaponFiringSystem.h"
+#include "ThrustSystem.h"
 #endif

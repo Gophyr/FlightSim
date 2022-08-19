@@ -5,6 +5,7 @@
 #include "FactionComponent.h"
 #include "LoadoutData.h"
 #include "AIComponent.h"
+#include "AITypes.h"
 #include "ShipParticleComponent.h"
 
 //Creates a ship using the data at the given id in the GameStateController.
@@ -17,6 +18,9 @@ flecs::entity createDefaultShip(vector3df position, vector3df rotation);
 
 //Creates a default AI ship. Includes AI, ship, bullet, irrlicht, weapon, sensors, faction, and health components. Returns the ID.
 flecs::entity createDefaultAIShip(vector3df position, vector3df rotation);
+
+//Creates an ace AI ship. Includes AI, ship, bullet, irrlicht, weapon, sensors, faction, and health components. Returns the ID.
+flecs::entity createAceAIShip(vector3df position, vector3df rotation);
 
 //Adds on the ship's collision body (i.e., the rigid body component) to the entity.
 bool initializeShipCollisionBody(flecs::entity entityId, u32 shipId, bool carrier=false);
@@ -55,11 +59,22 @@ IParticleSystemSceneNode* createShipJet(ISceneNode* node, vector3df pos, vector3
 //Adds the particle system to a given ship.
 void initializeShipParticles(flecs::entity id);
 
+//Builds a ship from the given ship instance with its health, weapons, ship component and all the rest. Returns the ID.
 flecs::entity createShipFromInstance(ShipInstance& inst, vector3df pos, vector3df rot);
+//Creates a player ship from the current player instance.
 flecs::entity createPlayerShipFromInstance(vector3df pos, vector3df rot);
+//Creates the given wingman, slots 1-3.
+flecs::entity createWingmanFromInstance(u32 num, flecs::entity player, vector3df pos, vector3df rot);
 
+//Creates an AI ship from the given ship instance at the position and rotation specified. Used by carriers.
 flecs::entity createAIShipFromInstance(ShipInstance& inst, vector3df pos, vector3df rot);
+//Creates an allied AI ship from the given instance.
 flecs::entity createFriendlyAIShipFromInstance(ShipInstance& inst, vector3df pos, vector3df rot);
+//Creates a hostile AI ship from the given instance.
 flecs::entity createHostileAIShipFromInstance(ShipInstance& inst, vector3df pos, vector3df rot);
+//Spawns a ship from a carrier and applies the same faction component that the carrier has.
 flecs::entity carrierSpawnShip(ShipInstance& inst, vector3df spawnPos, vector3df spawnRot, FactionComponent* carrFac);
+
+//The death callback used by fighters, a loud noise and a small bang.
+void fighterDeathExplosionCallback(flecs::entity id);
 #endif 

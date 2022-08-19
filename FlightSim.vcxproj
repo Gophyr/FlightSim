@@ -121,14 +121,14 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>irrlicht-1.8.4\include;bulletlibs\include;src\components;src\gui;src\systems;src\utilities;src\core;%(AdditionalIncludeDirectories);$(SolutionDir)src\systems\ai_systems;$(SolutionDir)\src\gui\hud;$(SolutionDir)\lib\irrklang\include;$(SolutionDir)/src/fx</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>irrlicht-1.8.4\include;bulletlibs\include;src\components;src\gui;src\systems;src\utilities;src\core;%(AdditionalIncludeDirectories);$(SolutionDir)src\systems\ai_systems;$(SolutionDir)\src\gui\hud;$(SolutionDir)\lib\irrklang\include;$(SolutionDir)/src/fx;$(SolutionDir)\lib\openal\include;$(SolutionDir)\lib\vorbis\include</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)\lib\irrlicht\lib\Win64-visualStudio;$(SolutionDir)\lib\bullet\lib\Debug;$(SolutionDir)\lib\irrklang\lib\Winx64-visualStudio</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)\lib\irrlicht\lib\Win64-visualStudio;$(SolutionDir)\lib\bullet\lib\Debug;$(SolutionDir)\lib\irrklang\lib\Winx64-visualStudio;$(SolutionDir)\lib\openal\lib;$(SolutionDir)\lib\vorbis\lib</AdditionalLibraryDirectories>
       <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -140,7 +140,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>lib\irrklang\include;lib\irrlicht\include;lib\bullet\src;src\components;src\gui;src\systems;src\utilities;src\core;%(AdditionalIncludeDirectories);$(SolutionDir)src\systems\ai_systems;$(SolutionDir)\src\gui\hud;lib\bullet\Extras;src\extras;$(SolutionDir)/src/fx</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>lib\irrklang\include;lib\irrlicht\include;lib\bullet\src;src\components;src\gui;src\systems;src\utilities;src\core;%(AdditionalIncludeDirectories);$(SolutionDir)src\systems\ai_systems;$(SolutionDir)\src\gui\hud;lib\bullet\Extras;src\extras;$(SolutionDir)/src/fx;$(SolutionDir)\lib\openal\include;$(SolutionDir)\lib\vorbis\include</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
@@ -149,33 +149,38 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>lib\irrklang\lib\Winx64-visualStudio;lib\irrlicht\lib;lib\bullet\lib\Release</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>lib\irrklang\lib\Winx64-visualStudio;lib\irrlicht\lib;lib\bullet\lib\Release;$(SolutionDir)\lib\openal\lib;$(SolutionDir)\lib\vorbis\lib</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\components\PlayerComponent.cpp" />
+    <ClCompile Include="src\core\AudioBuffer.cpp" />
+    <ClCompile Include="src\core\AudioDriver.cpp" />
+    <ClCompile Include="src\core\AudioSource.cpp" />
+    <ClCompile Include="src\core\Campaign.cpp" />
+    <ClCompile Include="src\core\Dialogue.cpp" />
     <ClCompile Include="src\core\flecs.c" />
     <ClCompile Include="src\core\GameAssets.cpp" />
     <ClCompile Include="src\core\Networking.cpp" />
+    <ClCompile Include="src\core\Sector.cpp" />
     <ClCompile Include="src\fx\Shaders.cpp" />
     <ClCompile Include="src\gui\GuiCampaignLoadoutMenu.cpp" />
     <ClCompile Include="src\gui\GuiCampaignMenu.cpp" />
     <ClCompile Include="src\gui\GuiDeathMenu.cpp" />
     <ClCompile Include="src\gui\GuiDialog.cpp" />
-    <ClCompile Include="src\gui\GuiLoadoutMenu.cpp" />
     <ClCompile Include="src\gui\GuiLootMenu.cpp" />
     <ClCompile Include="src\gui\GuiPauseMenu.cpp" />
     <ClCompile Include="src\gui\GuiMainMenu.cpp" />
     <ClCompile Include="src\core\GuiController.cpp" />
     <ClCompile Include="src\core\GameStateController.cpp" />
     <ClCompile Include="src\gui\GuiSettingsMenu.cpp" />
+    <ClCompile Include="src\gui\GuiWingmanMenu.cpp" />
     <ClCompile Include="src\gui\hud\HUDActiveSelection.cpp" />
     <ClCompile Include="src\gui\hud\HUDContact.cpp" />
     <ClCompile Include="src\gui\hud\HUDHealthBar.cpp" />
     <ClCompile Include="src\gui\hud\HUDVelocityBar.cpp" />
     <ClCompile Include="src\systems\AIUpdateSystem.cpp" />
-    <ClCompile Include="src\systems\ai_systems\DefaultAIBehaviors.cpp" />
-    <ClCompile Include="src\systems\ai_systems\DefaultAIUpdateSystem.cpp" />
+    <ClCompile Include="src\systems\ai_systems\AITypes.cpp" />
     <ClCompile Include="src\systems\CarrierUpdateSystem.cpp" />
     <ClCompile Include="src\systems\CollisionCheckingSystem.cpp" />
     <ClCompile Include="src\core\GameController.cpp" />
@@ -184,18 +189,19 @@
     <ClCompile Include="src\systems\HealthAndShieldSystems.cpp" />
     <ClCompile Include="src\systems\IrrlichtRigidBodyPositionSystem.cpp" />
     <ClCompile Include="src\core\main.cpp" />
-    <ClCompile Include="src\systems\ObjectiveSystem.cpp" />
     <ClCompile Include="src\systems\PlayerUpdateSystem.cpp" />
     <ClCompile Include="src\systems\ProjectileSystem.cpp" />
     <ClCompile Include="src\systems\SensorUpdateSystem.cpp" />
     <ClCompile Include="src\systems\ShipControlSystem.cpp" />
     <ClCompile Include="src\systems\ShipUpdateSystem.cpp" />
     <ClCompile Include="src\systems\SoundSystem.cpp" />
+    <ClCompile Include="src\systems\ThrustSystem.cpp" />
     <ClCompile Include="src\systems\WeaponFiringSystem.cpp" />
     <ClCompile Include="src\utilities\AttributeReaders.cpp" />
     <ClCompile Include="src\utilities\btUtils.cpp" />
     <ClCompile Include="src\utilities\CarrierUtils.cpp" />
     <ClCompile Include="src\utilities\Config.cpp" />
+    <ClCompile Include="src\utilities\DialogueEffects.cpp" />
     <ClCompile Include="src\utilities\GvReader.cpp" />
     <ClCompile Include="src\utilities\GameFunctions.cpp" />
     <ClCompile Include="src\utilities\IrrlichtUtils.cpp" />
@@ -215,22 +221,28 @@
     <ClInclude Include="src\components\HarpoonComponent.h" />
     <ClInclude Include="src\components\KineticComponent.h" />
     <ClInclude Include="src\components\MissileComponent.h" />
+    <ClInclude Include="src\components\ThrustComponent.h" />
     <ClInclude Include="src\components\ObjectiveComponent.h" />
     <ClInclude Include="src\components\ObstacleComponent.h" />
     <ClInclude Include="src\components\SensorComponent.h" />
     <ClInclude Include="src\components\ShieldComponent.h" />
     <ClInclude Include="src\components\ShipParticleComponent.h" />
-    <ClInclude Include="src\components\TurretComponent.h" />
+    <ClInclude Include="src\components\HardpointComponent.h" />
+    <ClInclude Include="src\core\AudioBuffer.h" />
+    <ClInclude Include="src\core\AudioDriver.h" />
+    <ClInclude Include="src\core\AudioSource.h" />
     <ClInclude Include="src\core\Campaign.h" />
+    <ClInclude Include="src\core\Dialogue.h" />
     <ClInclude Include="src\core\flecs.h" />
+    <ClInclude Include="src\core\Sector.h" />
     <ClInclude Include="src\core\SystemsHeader.h" />
     <ClInclude Include="src\fx\Shaders.h" />
     <ClInclude Include="src\gui\GuiCampaignLoadoutMenu.h" />
     <ClInclude Include="src\gui\GuiCampaignMenu.h" />
     <ClInclude Include="src\gui\GuiDeathMenu.h" />
-    <ClInclude Include="src\gui\GuiLoadoutMenu.h" />
     <ClInclude Include="src\gui\GuiLootMenu.h" />
     <ClInclude Include="src\gui\GuiSettingsMenu.h" />
+    <ClInclude Include="src\gui\GuiWingmanMenu.h" />
     <ClInclude Include="src\gui\hud\HUDActiveSelection.h" />
     <ClInclude Include="src\gui\hud\HUDContact.h" />
     <ClInclude Include="src\gui\hud\HUDElement.h" />
@@ -249,8 +261,7 @@
     <ClInclude Include="src\core\BaseHeader.h" />
     <ClInclude Include="src\components\BulletRigidBodyComponent.h" />
     <ClInclude Include="src\gui\MenuData.h" />
-    <ClInclude Include="src\systems\ai_systems\DefaultAIBehaviors.h" />
-    <ClInclude Include="src\systems\ai_systems\DefaultAIUpdateSystem.h" />
+    <ClInclude Include="src\systems\ai_systems\AITypes.h" />
     <ClInclude Include="src\systems\CarrierUpdateSystem.h" />
     <ClInclude Include="src\systems\CollisionCheckingSystem.h" />
     <ClInclude Include="src\core\GameController.h" />
@@ -262,7 +273,6 @@
     <ClInclude Include="src\components\IrrlichtComponent.h" />
     <ClInclude Include="src\systems\IrrlichtRigidBodyPositionSystem.h" />
     <ClInclude Include="src\components\PlayerComponent.h" />
-    <ClInclude Include="src\systems\ObjectiveSystem.h" />
     <ClInclude Include="src\systems\PlayerUpdateSystem.h" />
     <ClInclude Include="src\systems\ProjectileSystem.h" />
     <ClInclude Include="src\components\ShipComponent.h" />
@@ -270,12 +280,14 @@
     <ClInclude Include="src\systems\ShipControlSystem.h" />
     <ClInclude Include="src\systems\ShipUpdateSystem.h" />
     <ClInclude Include="src\systems\SoundSystem.h" />
+    <ClInclude Include="src\systems\ThrustSystem.h" />
     <ClInclude Include="src\systems\WeaponFiringSystem.h" />
     <ClInclude Include="src\components\WeaponInfoComponent.h" />
     <ClInclude Include="src\utilities\AttributeReaders.h" />
     <ClInclude Include="src\utilities\btUtils.h" />
     <ClInclude Include="src\utilities\CarrierUtils.h" />
     <ClInclude Include="src\utilities\Config.h" />
+    <ClInclude Include="src\utilities\DialogueEffects.h" />
     <ClInclude Include="src\utilities\GvReader.h" />
     <ClInclude Include="src\utilities\GameAssets.h" />
     <ClInclude Include="src\utilities\GameFunctions.h" />

@@ -60,14 +60,14 @@ void GuiController::init()
 	menus[GUI_DEATH_MENU]->init();
 	menus[GUI_SETTINGS_MENU] = new GuiSettingsMenu;
 	menus[GUI_SETTINGS_MENU]->init();
-	menus[GUI_LOADOUT_MENU] = new GuiLoadoutMenu;
-	menus[GUI_LOADOUT_MENU]->init();
 	menus[GUI_CAMPAIGN_MENU] = new GuiCampaignMenu;
 	menus[GUI_CAMPAIGN_MENU]->init();
 	menus[GUI_CAMPAIGN_LOADOUT_MENU] = new GuiCampaignLoadoutMenu;
 	menus[GUI_CAMPAIGN_LOADOUT_MENU]->init();
 	menus[GUI_LOOT_MENU] = new GuiLootMenu;
 	menus[GUI_LOOT_MENU]->init();
+	menus[GUI_WINGMAN_MENU] = new GuiWingmanMenu;
+	menus[GUI_WINGMAN_MENU]->init();
 
 	setActiveDialog(GUI_MAIN_MENU);
 	//default main menu

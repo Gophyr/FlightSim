@@ -9,7 +9,7 @@ std::vector<ContactInfo> getContacts(BulletRigidBodyComponent* rbc, SensorCompon
 	btSphereShape shape(sens->detectionRadius);
 	btPairCachingGhostObject ghost; ///ooooooooooooooooooooooooo!
 	btTransform transform;
-	transform.setOrigin(rbc->rigidBody.getCenterOfMassPosition());
+	transform.setOrigin(rbc->rigidBody->getCenterOfMassPosition());
 	ghost.setCollisionShape(&shape);
 	ghost.setWorldTransform(transform);
 	bWorld->addCollisionObject(&ghost);
@@ -18,10 +18,9 @@ std::vector<ContactInfo> getContacts(BulletRigidBodyComponent* rbc, SensorCompon
 	btVector3 closeHostileDist(0, 0, 0);
 	btVector3 closeFriendlyDist(0, 0, 0);
 	btVector3 closeDist(0, 0, 0);
-
-	for (u32 i = 0; i < ghost.getNumOverlappingObjects(); ++i) {
+	for (s32 i = 0; i < ghost.getNumOverlappingObjects(); ++i) {
 		btCollisionObject* obj = ghost.getOverlappingObject(i);
-		if (obj == &rbc->rigidBody) continue;
+		if (obj == rbc->rigidBody) continue;
 
 		flecs::entity objId = getIdFromBt(obj);
 		if (!objId.is_alive()) continue;
@@ -31,7 +30,7 @@ std::vector<ContactInfo> getContacts(BulletRigidBodyComponent* rbc, SensorCompon
 		auto objFac = objId.get<FactionComponent>();
 		ContactInfo info = { objId, objRBC, objFac };
 
-		btVector3 dist = objRBC->rigidBody.getCenterOfMassPosition() - rbc->rigidBody.getCenterOfMassPosition();
+		btVector3 dist = objRBC->rigidBody->getCenterOfMassPosition() - rbc->rigidBody->getCenterOfMassPosition();
 		btScalar len = dist.length2();
 		//update closest hostile, friendly, and general contacts
 		if (len > closeDist.length2()) {
@@ -73,24 +72,3 @@ void sensorSystem(flecs::iter it, BulletRigidBodyComponent* rbcs, SensorComponen
 		}
 	}
 }
-
-/*
-void sensorSystem(f32 dt)
-{
-	for (EntityId id : SceneView<BulletRigidBodyComponent, SensorComponent, FactionComponent>(sceneManager->scene)) {
-		auto sens = sceneManager->scene.get<SensorComponent>(id);
-		auto fac = sceneManager->scene.get<FactionComponent>(id);
-		auto rbc = sceneManager->scene.get<BulletRigidBodyComponent>(id);
-		sens->timeSinceLastUpdate += dt;
-		if (sens->timeSinceLastUpdate >= sens->updateInterval) {
-			sens->contacts = getContacts(rbc, sens, fac);
-			sens->timeSinceLastUpdate = 0;
-		}
-		if (sens->targetContact != INVALID_ENTITY) {
-			sens->timeSelected += dt;
-		} else {
-			sens->timeSelected = 0;
-		}
-	}
-}
-*/
